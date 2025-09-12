@@ -723,7 +723,7 @@ async def shutdown_db_client():
 @api_router.get("/health")
 async def health_check():
     return {
-        "status": "healthy",
+        "status": "healthy", 
         "timestamp": datetime.now(timezone.utc),
         "version": "1.0.0"
     }
