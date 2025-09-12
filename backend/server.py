@@ -394,6 +394,13 @@ async def create_feedback(
     if not category:
         raise HTTPException(status_code=400, detail="Invalid category")
     
+    # Get current user if authenticated
+    if not feedback_data.is_anonymous:
+        try:
+            current_user = await get_current_user(security())
+        except:
+            current_user = None
+    
     # Create feedback object
     feedback = Feedback(**feedback_data.dict())
     feedback.user_id = current_user.id if current_user and not feedback_data.is_anonymous else None
