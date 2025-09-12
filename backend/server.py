@@ -413,7 +413,7 @@ async def create_feedback(feedback_data: FeedbackCreate):
     
     await db.feedback.insert_one(feedback.dict())
     await log_action(
-        current_user.id if current_user else None, 
+        feedback.user_id, 
         "CREATE", 
         "feedback", 
         feedback.id, 
