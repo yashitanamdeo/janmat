@@ -696,6 +696,15 @@ async def initialize_default_data(
     
     return {"message": "Default data initialized successfully"}
 
+# Health check
+@api_router.get("/health")
+async def health_check():
+    return {
+        "status": "healthy", 
+        "timestamp": datetime.now(timezone.utc),
+        "version": "1.0.0"
+    }
+
 # Include the router
 app.include_router(api_router)
 
