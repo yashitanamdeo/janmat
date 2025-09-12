@@ -387,7 +387,7 @@ async def create_category(
 @api_router.post("/feedback", response_model=Feedback)
 async def create_feedback(
     feedback_data: FeedbackCreate,
-    current_user: Optional[User] = Depends(get_current_user) if not feedback_data.is_anonymous else None
+    current_user: Optional[User] = None
 ):
     # Get category to determine department
     category = await db.categories.find_one({"id": feedback_data.category_id})
