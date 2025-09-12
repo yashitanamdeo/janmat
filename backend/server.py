@@ -385,25 +385,15 @@ async def create_category(
 
 # Feedback Management
 @api_router.post("/feedback", response_model=Feedback)
-async def create_feedback(
-    feedback_data: FeedbackCreate,
-    current_user: Optional[User] = None
-):
+async def create_feedback(feedback_data: FeedbackCreate):
     # Get category to determine department
     category = await db.categories.find_one({"id": feedback_data.category_id})
     if not category:
         raise HTTPException(status_code=400, detail="Invalid category")
     
-    # Get current user if authenticated
-    if not feedback_data.is_anonymous:
-        try:
-            current_user = await get_current_user(security())
-        except:
-            current_user = None
-    
     # Create feedback object
     feedback = Feedback(**feedback_data.dict())
-    feedback.user_id = current_user.id if current_user and not feedback_data.is_anonymous else None
+    feedback.user_id = None  # Will be set later if authenticated
     feedback.department = category.get('department')
     
     # AI Analysis
