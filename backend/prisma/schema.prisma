@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CITIZEN
+  ADMIN
+  OFFICER
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String?  @unique
+  phone     String?  @unique
+  password  String
+  role      Role     @default(CITIZEN)
+  isVerified Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  complaints Complaint[]
+  assignedComplaints Complaint[] @relation("AssignedOfficer")
+  notifications Notification[]
+
+  @@map("users")
+}
+
+enum Urgency {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum Status {
+  PENDING
+  IN_PROGRESS
+  RESOLVED
+  REJECTED
+}
+
+model Complaint {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  category    String?  // Auto-categorized or user-provided
+  urgency     Urgency  @default(LOW)
+  status      Status   @default(PENDING)
+  location    String?  // JSON string or address
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  assignedTo  String?
+  assignedOfficer User? @relation("AssignedOfficer", fields: [assignedTo], references: [id])
+  attachments Attachment[]
+  timeline    ComplaintTimeline[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("complaints")
+}
+
+model Attachment {
+  id          String   @id @default(uuid())
+  complaintId String
+  complaint   Complaint @relation(fields: [complaintId], references: [id])
+  url         String
+  type        String   // IMAGE, VIDEO
+  createdAt   DateTime @default(now())
+
+  @@map("attachments")
+}
+
+model ComplaintTimeline {
+  id          String   @id @default(uuid())
+  complaintId String
+  complaint   Complaint @relation(fields: [complaintId], references: [id])
+  status      Status
+  comment     String?
+  updatedBy   String?  // User ID or Name
+  timestamp   DateTime @default(now())
+
+  @@map("complaint_timeline")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  message   String
+  type      String   // INFO, WARNING, SUCCESS, ERROR
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+}
