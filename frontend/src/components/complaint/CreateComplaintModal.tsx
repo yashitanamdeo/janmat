@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { addComplaint } from '../../store/slices/complaintSlice';
-import { Modal } from '../ui/Modal';
-import { Input } from '../ui/Input';
-import { Textarea } from '../ui/Textarea';
-import { Select } from '../ui/Select';
-import { Button } from '../ui/Button';
 import { MapComponent } from '../ui/MapComponent';
 import axios from 'axios';
 
@@ -34,128 +29,176 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({ isOp
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('description', description);
+            formData.append('urgency', urgency);
+            formData.append('location', location);
 
-            const complaintData = {
-                title,
-                description,
-                urgency,
-                location
-            };
+            if (files) {
+                for (let i = 0; i < files.length; i++) {
+                    formData.append('files', files[i]);
+                }
+            }
 
             const response = await axios.post(
                 'http://localhost:3000/api/complaints',
-                complaintData,
+                formData,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'multipart/form-data',
                     },
                 }
             );
+
             dispatch(addComplaint(response.data));
             onClose();
+            // Reset form
             setTitle('');
             setDescription('');
             setUrgency('LOW');
             setLocation('');
             setFiles(null);
-        } catch (err) {
-            console.error('Failed to create complaint:', err);
+        } catch (error) {
+            console.error('Failed to create complaint:', error);
         } finally {
             setLoading(false);
         }
     };
 
+    if (!isOpen) return null;
+
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="New Complaint" size="lg">
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <Input
-                    label="Title"
-                    required
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Brief description of the issue"
-                    icon={
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fade-in" onClick={onClose}>
+            <div className="modern-card max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                        New Complaint
+                    </h2>
+                    <button onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
-                    }
-                />
-
-                <Textarea
-                    label="Description"
-                    rows={4}
-                    required
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Provide detailed information about the complaint..."
-                />
-
-                <Select
-                    label="Urgency"
-                    value={urgency}
-                    onChange={(e) => setUrgency(e.target.value)}
-                    options={urgencyOptions}
-                />
-
-                <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Location</label>
-                    <MapComponent onLocationSelect={(lat, lng) => setLocation(`${lat},${lng}`)} />
-                    <input type="hidden" value={location} />
-                    {location && (
-                        <p className="mt-2 text-sm text-gray-600 flex items-center gap-2">
-                            <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                            </svg>
-                            <span className="font-medium">Location selected: {location}</span>
-                        </p>
-                    )}
-                    {!location && (
-                        <p className="mt-2 text-xs text-gray-500">Click on the map to select a location</p>
-                    )}
+                    </button>
                 </div>
 
-                <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Attachments</label>
-                    <div className="relative">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div>
+                        <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Title</label>
                         <input
-                            type="file"
-                            multiple
-                            onChange={(e) => setFiles(e.target.files)}
-                            className="block w-full text-sm text-gray-600
-                                file:mr-4 file:py-3 file:px-6
-                                file:rounded-xl file:border-0
-                                file:text-sm file:font-semibold
-                                file:bg-blue-50 file:text-blue-700
-                                hover:file:bg-blue-100
-                                file:cursor-pointer cursor-pointer
-                                file:transition-all file:duration-200
-                                border-2 border-dashed border-gray-300 rounded-xl p-4
-                                hover:border-blue-400 transition-colors"
+                            type="text"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            className="modern-input"
+                            placeholder="Brief title of the issue"
+                            required
                         />
                     </div>
-                    {files && files.length > 0 && (
-                        <p className="mt-2 text-sm text-gray-600 flex items-center gap-2">
-                            <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M8 4a3 3 0 00-3 3v4a5 5 0 0010 0V7a1 1 0 112 0v4a7 7 0 11-14 0V7a5 5 0 0110 0v4a3 3 0 11-6 0V7a1 1 0 012 0v4a1 1 0 102 0V7a3 3 0 00-3-3z" clipRule="evenodd" />
-                            </svg>
-                            <span className="font-medium">{files.length} file(s) selected</span>
-                        </p>
-                    )}
-                </div>
 
-                <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-                    <Button type="button" variant="outline" onClick={onClose}>
-                        Cancel
-                    </Button>
-                    <Button type="submit" isLoading={loading}>
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                        </svg>
-                        Submit Complaint
-                    </Button>
-                </div>
-            </form>
-        </Modal>
+                    <div>
+                        <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Description</label>
+                        <textarea
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            className="modern-input"
+                            rows={4}
+                            placeholder="Detailed description of the complaint..."
+                            required
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Urgency</label>
+                            <select
+                                value={urgency}
+                                onChange={(e) => setUrgency(e.target.value)}
+                                className="modern-input"
+                            >
+                                {urgencyOptions.map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Location</label>
+                            <input
+                                type="text"
+                                value={location}
+                                onChange={(e) => setLocation(e.target.value)}
+                                className="modern-input"
+                                placeholder="Address or landmark"
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Media Attachments</label>
+                        <div className="relative">
+                            <input
+                                type="file"
+                                multiple
+                                onChange={(e) => setFiles(e.target.files)}
+                                className="hidden"
+                                id="file-upload"
+                            />
+                            <label
+                                htmlFor="file-upload"
+                                className="flex items-center justify-center w-full p-4 border-2 border-dashed rounded-xl cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+                                style={{ borderColor: 'var(--border-color)' }}
+                            >
+                                <div className="text-center">
+                                    <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                        {files && files.length > 0
+                                            ? `${files.length} file(s) selected`
+                                            : 'Click to upload images or videos'
+                                        }
+                                    </p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Location on Map</label>
+                        <div className="h-64 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+                            <MapComponent
+                                isMarkerDraggable={true}
+                                onLocationSelect={(loc) => {
+                                    setLocation(`${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)}`);
+                                }}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex gap-4 pt-4 border-t" style={{ borderColor: 'var(--border-color)' }}>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="flex-1 px-6 py-3 rounded-xl font-semibold transition-all hover:scale-105"
+                            style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="flex-1 px-6 py-3 rounded-xl font-semibold text-white transition-all hover:scale-105 shadow-lg"
+                            style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
+                        >
+                            {loading ? 'Submitting...' : 'Submit Complaint'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     );
 };

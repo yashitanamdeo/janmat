@@ -20,12 +20,16 @@ model User {
   phone     String?  @unique
   password  String
   role      Role     @default(CITIZEN)
+  dateOfBirth DateTime? // For age validation
   isVerified Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   complaints Complaint[]
   assignedComplaints Complaint[] @relation("AssignedOfficer")
   notifications Notification[]
+  feedbacks Feedback[]
+  department Department? @relation(fields: [departmentId], references: [id])
+  departmentId String?
 
   @@map("users")
 }
@@ -43,11 +47,23 @@ enum Status {
   REJECTED
 }
 
+model Department {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  officers    User[]
+  complaints  Complaint[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("departments")
+}
+
 model Complaint {
   id          String   @id @default(uuid())
   title       String
   description String
-  category    String?  // Auto-categorized or user-provided
+  category    String?  // Subcategory within department
   urgency     Urgency  @default(LOW)
   status      Status   @default(PENDING)
   location    String?  // JSON string or address
@@ -55,10 +71,14 @@ model Complaint {
   user        User     @relation(fields: [userId], references: [id])
   assignedTo  String?
   assignedOfficer User? @relation("AssignedOfficer", fields: [assignedTo], references: [id])
+  departmentId String?
+  department  Department? @relation(fields: [departmentId], references: [id])
   attachments Attachment[]
   timeline    ComplaintTimeline[]
+  feedback    Feedback?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  resolvedAt  DateTime? // Track resolution time
 
   @@map("complaints")
 }
@@ -84,6 +104,20 @@ model ComplaintTimeline {
   timestamp   DateTime @default(now())
 
   @@map("complaint_timeline")
+}
+
+model Feedback {
+  id          String   @id @default(uuid())
+  complaintId String   @unique
+  complaint   Complaint @relation(fields: [complaintId], references: [id])
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  rating      Int      // 1-5 stars
+  comment     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("feedbacks")
 }
 
 model Notification {

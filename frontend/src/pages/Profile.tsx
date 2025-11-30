@@ -2,9 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import type { RootState } from '../store/store';
-import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
-import { Card } from '../components/ui/Card';
 import { logout, updateUser } from '../store/slices/authSlice';
 import axios from 'axios';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
@@ -19,6 +16,7 @@ export const Profile: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState('');
     const [error, setError] = useState('');
+    const [isEditing, setIsEditing] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -45,10 +43,8 @@ export const Profile: React.FC = () => {
 
             if (response.data) {
                 setSuccess('Profile updated successfully!');
-                // Update user in Redux store
                 dispatch(updateUser(response.data));
-
-                // Clear success message after 3 seconds
+                setIsEditing(false);
                 setTimeout(() => setSuccess(''), 3000);
             }
         } catch (err: any) {
@@ -69,181 +65,179 @@ export const Profile: React.FC = () => {
         return '/dashboard';
     };
 
-    const getRoleBadgeColor = (role: string) => {
-        switch (role) {
-            case 'ADMIN':
-                return 'bg-purple-100 text-purple-800 border-purple-200';
-            case 'OFFICER':
-                return 'bg-blue-100 text-blue-800 border-blue-200';
-            case 'CITIZEN':
-                return 'bg-green-100 text-green-800 border-green-200';
-            default:
-                return 'bg-gray-100 text-gray-800 border-gray-200';
-        }
+    const getGradient = () => {
+        if (user?.role === 'ADMIN') return 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)';
+        if (user?.role === 'OFFICER') return 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
+        return 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
     };
 
     return (
-        <div className="min-h-screen transition-colors duration-300">
+        <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
             {/* Navigation */}
-            <nav className="bg-white/80 backdrop-blur-xl shadow-lg border-b border-gray-100">
+            <nav className="modern-card" style={{ borderRadius: '0', borderLeft: '0', borderRight: '0', borderTop: '0', position: 'sticky', top: 0, zIndex: 50 }}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between h-20">
+                    <div className="flex justify-between items-center h-20">
                         <div className="flex items-center gap-4">
                             <button
                                 onClick={() => navigate(getDashboardPath())}
-                                className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                                className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-transform hover:scale-105"
+                                style={{ background: getGradient() }}
                             >
-                                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h1 className="text-2xl font-bold text-gradient-primary">JanMat</h1>
-                                    <p className="text-xs text-gray-600">Back to Dashboard</p>
-                                </div>
+                                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                </svg>
                             </button>
+                            <div>
+                                <h1 className="text-2xl font-bold" style={{ background: getGradient(), WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                                    My Profile
+                                </h1>
+                                <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Manage your account</p>
+                            </div>
                         </div>
                         <div className="flex items-center gap-4">
                             <ThemeToggle />
-                            <Button variant="outline" size="sm" onClick={handleLogout}>
-                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <button
+                                onClick={handleLogout}
+                                className="px-4 py-2 rounded-xl font-semibold text-sm transition-all hover:scale-105 flex items-center gap-2"
+                                style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                                 </svg>
                                 Logout
-                            </Button>
+                            </button>
                         </div>
                     </div>
                 </div>
             </nav>
 
             {/* Main Content */}
-            <main className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-                <div className="mb-8 fade-in">
-                    <h2 className="text-4xl font-bold text-gray-900 mb-2">Profile Settings</h2>
-                    <p className="text-gray-600">Manage your account information and preferences</p>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Profile Card */}
-                    <div className="lg:col-span-1">
-                        <Card variant="glass" className="shadow-xl">
-                            <div className="text-center">
-                                <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-3xl font-bold mx-auto mb-4 shadow-lg">
-                                    {user?.name?.charAt(0).toUpperCase()}
-                                </div>
-                                <h3 className="text-xl font-bold text-gray-900 mb-2">{user?.name}</h3>
-                                <p className="text-gray-600 mb-4">{user?.email}</p>
-                                <span className={`inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold border ${getRoleBadgeColor(user?.role || '')}`}>
+            <main className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8 fade-in">
+                {/* Profile Header */}
+                <div className="relative mb-24">
+                    <div className="h-48 rounded-3xl w-full absolute top-0" style={{ background: getGradient() }}>
+                        <div className="absolute inset-0 opacity-20">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+                            <div className="absolute bottom-0 left-0 w-64 h-64 bg-white rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2"></div>
+                        </div>
+                    </div>
+                    <div className="relative pt-32 px-8 flex flex-col items-center">
+                        <div className="w-32 h-32 rounded-full border-4 border-white dark:border-slate-800 shadow-xl flex items-center justify-center text-4xl font-bold text-white z-10"
+                            style={{ background: getGradient() }}>
+                            {user?.name?.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="mt-4 text-center">
+                            <h2 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{user?.name}</h2>
+                            <div className="flex items-center justify-center gap-2 mt-2">
+                                <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider"
+                                    style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>
                                     {user?.role}
                                 </span>
+                                <span className="text-sm" style={{ color: 'var(--text-tertiary)' }}>{user?.email}</span>
                             </div>
+                        </div>
+                    </div>
+                </div>
 
-                            <div className="mt-6 pt-6 border-t border-gray-200">
-                                <div className="space-y-3">
-                                    <div className="flex items-center gap-3 text-sm text-gray-600">
-                                        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                        </svg>
-                                        <span>{user?.email}</span>
-                                    </div>
-                                    <div className="flex items-center gap-3 text-sm text-gray-600">
-                                        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        <span>Account Active</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </Card>
+                {/* Profile Form */}
+                <div className="modern-card">
+                    <div className="flex items-center justify-between mb-8">
+                        <h3 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Personal Information</h3>
+                        {!isEditing && (
+                            <button
+                                onClick={() => setIsEditing(true)}
+                                className="px-4 py-2 rounded-xl font-semibold text-sm transition-all hover:scale-105 flex items-center gap-2"
+                                style={{ background: 'var(--bg-secondary)', color: 'var(--primary)' }}
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                </svg>
+                                Edit Profile
+                            </button>
+                        )}
                     </div>
 
-                    {/* Edit Form */}
-                    <div className="lg:col-span-2">
-                        <Card variant="glass" className="shadow-xl">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-6">Edit Profile</h3>
-
-                            <form onSubmit={handleSubmit} className="space-y-6">
-                                <Input
-                                    label="Full Name"
-                                    type="text"
-                                    required
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    placeholder="Enter your full name"
-                                    icon={
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                        </svg>
-                                    }
-                                />
-
-                                <Input
-                                    label="Email Address"
-                                    type="email"
-                                    required
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="Enter your email"
-                                    icon={
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                        </svg>
-                                    }
-                                />
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Role</label>
-                                    <div className="px-4 py-3.5 text-base rounded-xl border-2 border-gray-200 bg-gray-50 text-gray-600">
-                                        {user?.role} (Cannot be changed)
-                                    </div>
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Full Name</label>
+                                <div className="input-with-icon">
+                                    <svg className="input-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    <input
+                                        type="text"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        disabled={!isEditing}
+                                        className="modern-input"
+                                        style={{ opacity: isEditing ? 1 : 0.7 }}
+                                    />
                                 </div>
+                            </div>
 
-                                {success && (
-                                    <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg">
-                                        <div className="flex items-center">
-                                            <svg className="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                            </svg>
-                                            <span className="text-green-700 font-medium">{success}</span>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {error && (
-                                    <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
-                                        <div className="flex items-center">
-                                            <svg className="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                            </svg>
-                                            <span className="text-red-700 font-medium">{error}</span>
-                                        </div>
-                                    </div>
-                                )}
-
-                                <div className="flex gap-4 pt-4">
-                                    <Button type="submit" isLoading={loading} className="flex-1">
-                                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        Save Changes
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={() => {
-                                            setName(user?.name || '');
-                                            setEmail(user?.email || '');
-                                            setError('');
-                                            setSuccess('');
-                                        }}
-                                    >
-                                        Reset
-                                    </Button>
+                            <div>
+                                <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Email Address</label>
+                                <div className="input-with-icon">
+                                    <svg className="input-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                                    </svg>
+                                    <input
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        disabled={!isEditing}
+                                        className="modern-input"
+                                        style={{ opacity: isEditing ? 1 : 0.7 }}
+                                    />
                                 </div>
-                            </form>
-                        </Card>
-                    </div>
+                            </div>
+                        </div>
+
+                        {error && (
+                            <div className="p-4 rounded-xl flex items-center gap-3" style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#EF4444' }}>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                {error}
+                            </div>
+                        )}
+
+                        {success && (
+                            <div className="p-4 rounded-xl flex items-center gap-3" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10B981' }}>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                                {success}
+                            </div>
+                        )}
+
+                        {isEditing && (
+                            <div className="flex gap-4 pt-4 border-t" style={{ borderColor: 'var(--border-color)' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setIsEditing(false);
+                                        setName(user?.name || '');
+                                        setEmail(user?.email || '');
+                                        setError('');
+                                    }}
+                                    className="flex-1 px-6 py-3 rounded-xl font-semibold transition-all hover:scale-105"
+                                    style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="flex-1 px-6 py-3 rounded-xl font-semibold text-white transition-all hover:scale-105 shadow-lg"
+                                    style={{ background: getGradient() }}
+                                >
+                                    {loading ? 'Saving...' : 'Save Changes'}
+                                </button>
+                            </div>
+                        )}
+                    </form>
                 </div>
             </main>
         </div>

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../store/store';
 import { fetchComplaintsStart, fetchComplaintsSuccess, fetchComplaintsFailure } from '../store/slices/complaintSlice';
-import { Button } from '../components/ui/Button';
 import { CreateComplaintModal } from '../components/complaint/CreateComplaintModal';
 import { EditComplaintModal } from '../components/complaint/EditComplaintModal';
 import { logout } from '../store/slices/authSlice';
@@ -52,62 +51,94 @@ export const Dashboard: React.FC = () => {
         setSelectedComplaint(null);
     };
 
-    // Filter complaints based on status
     const filteredComplaints = statusFilter
         ? complaints.filter(c => c.status === statusFilter)
         : complaints;
 
     const stats = [
-        { name: 'Total Complaints', value: complaints.length, icon: '📋', color: 'from-blue-500 to-blue-600', filter: null },
-        { name: 'Pending', value: complaints.filter(c => c.status === 'PENDING').length, icon: '⏳', color: 'from-yellow-500 to-yellow-600', filter: 'PENDING' },
-        { name: 'In Progress', value: complaints.filter(c => c.status === 'IN_PROGRESS').length, icon: '🔄', color: 'from-purple-500 to-purple-600', filter: 'IN_PROGRESS' },
-        { name: 'Resolved', value: complaints.filter(c => c.status === 'RESOLVED').length, icon: '✅', color: 'from-green-500 to-green-600', filter: 'RESOLVED' },
+        {
+            name: 'Total Complaints',
+            value: complaints.length,
+            icon: '📋',
+            gradient: 'from-blue-500 to-blue-600',
+            bgGradient: 'from-blue-50 to-blue-100',
+            darkBg: 'from-blue-900/20 to-blue-800/20',
+            filter: null
+        },
+        {
+            name: 'Pending',
+            value: complaints.filter(c => c.status === 'PENDING').length,
+            icon: '⏳',
+            gradient: 'from-yellow-500 to-orange-500',
+            bgGradient: 'from-yellow-50 to-orange-100',
+            darkBg: 'from-yellow-900/20 to-orange-800/20',
+            filter: 'PENDING'
+        },
+        {
+            name: 'In Progress',
+            value: complaints.filter(c => c.status === 'IN_PROGRESS').length,
+            icon: '🔄',
+            gradient: 'from-purple-500 to-pink-500',
+            bgGradient: 'from-purple-50 to-pink-100',
+            darkBg: 'from-purple-900/20 to-pink-800/20',
+            filter: 'IN_PROGRESS'
+        },
+        {
+            name: 'Resolved',
+            value: complaints.filter(c => c.status === 'RESOLVED').length,
+            icon: '✅',
+            gradient: 'from-green-500 to-emerald-600',
+            bgGradient: 'from-green-50 to-emerald-100',
+            darkBg: 'from-green-900/20 to-emerald-800/20',
+            filter: 'RESOLVED'
+        },
     ];
 
     return (
-        <div className="min-h-screen transition-colors duration-300">
+        <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
             {/* Modern Navigation */}
-            <nav className="glass shadow-lg border-b border-gray-100 dark:border-slate-800 sticky top-0 z-50">
+            <nav className="modern-card" style={{ borderRadius: '0', borderLeft: '0', borderRight: '0', borderTop: '0', position: 'sticky', top: 0, zIndex: 50 }}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between h-20">
+                    <div className="flex justify-between items-center h-20">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                            <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg"
+                                style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
                                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                                 </svg>
                             </div>
                             <div>
-                                <h1 className="text-2xl font-bold text-gradient-primary">JanMat</h1>
-                                <p className="text-xs text-gray-600 dark:text-gray-400">Citizen Dashboard</p>
+                                <h1 className="text-2xl font-bold" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                                    JanMat
+                                </h1>
+                                <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Citizen Dashboard</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-4">
                             <ThemeToggle />
                             <button
                                 onClick={() => navigate('/profile')}
-                                className="hidden md:flex items-center gap-3 text-right hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl p-2 transition-colors cursor-pointer"
+                                className="hidden md:flex items-center gap-3 px-4 py-2 rounded-xl transition-all hover:scale-105"
+                                style={{ background: 'var(--bg-secondary)' }}
                             >
                                 <div className="text-right">
-                                    <p className="text-sm font-semibold text-gray-900 dark:text-white">{user?.name}</p>
-                                    <p className="text-xs text-gray-600 dark:text-gray-400">{user?.email}</p>
+                                    <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{user?.name}</p>
+                                    <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{user?.email}</p>
                                 </div>
-                                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold shadow-md">
+                                <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-md"
+                                    style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
                                     {user?.name?.charAt(0).toUpperCase()}
                                 </div>
                             </button>
                             <button
-                                onClick={() => navigate('/profile')}
-                                className="md:hidden w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold shadow-md hover:shadow-lg transition-shadow"
-                                title="View Profile"
+                                onClick={handleLogout}
+                                className="px-4 py-2 rounded-xl font-semibold text-sm transition-all hover:scale-105"
+                                style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
                             >
-                                {user?.name?.charAt(0).toUpperCase()}
-                            </button>
-                            <Button variant="outline" size="sm" onClick={handleLogout}>
-                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                                 </svg>
-                                Logout
-                            </Button>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -115,47 +146,72 @@ export const Dashboard: React.FC = () => {
 
             {/* Main Content */}
             <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-                {/* Welcome Section */}
-                <div className="mb-8 fade-in">
-                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                        Welcome back, {user?.name?.split(' ')[0]}! 👋
-                    </h2>
-                    <p className="text-gray-600 dark:text-gray-400">Here's an overview of your complaints and their current status.</p>
+                {/* Welcome Banner */}
+                <div className="mb-8 p-8 rounded-2xl relative overflow-hidden fade-in"
+                    style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+                    <div className="absolute inset-0 opacity-10">
+                        <div className="absolute -top-20 -right-20 w-40 h-40 bg-white rounded-full blur-3xl"></div>
+                        <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-white rounded-full blur-3xl"></div>
+                    </div>
+                    <div className="relative z-10">
+                        <h2 className="text-3xl font-bold text-white mb-2">
+                            Welcome back, {user?.name?.split(' ')[0]}! 👋
+                        </h2>
+                        <p className="text-white text-opacity-90">
+                            Here's an overview of your complaints and their current status
+                        </p>
+                    </div>
                 </div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 slide-in-bottom">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     {stats.map((stat, index) => (
                         <button
                             key={stat.name}
                             onClick={() => setStatusFilter(stat.filter)}
-                            className={`glass rounded-2xl p-6 shadow-lg border-2 transition-all duration-300 text-left ${statusFilter === stat.filter
-                                ? 'border-blue-500 dark:border-blue-400 ring-4 ring-blue-200 dark:ring-blue-900/50 scale-105'
-                                : 'border-gray-100 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600 hover:scale-102'
+                            className={`modern-card hover-lift transition-all duration-300 text-left relative overflow-hidden ${statusFilter === stat.filter ? 'ring-4 ring-offset-2' : ''
                                 }`}
-                            style={{ animationDelay: `${index * 100}ms` }}
+                            style={{
+                                animationDelay: `${index * 100}ms`,
+                                ringColor: statusFilter === stat.filter ? 'var(--primary)' : 'transparent'
+                            }}
                         >
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-1">{stat.name}</p>
-                                    <p className="text-3xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
+                            <div className={`absolute inset-0 bg-gradient-to-br ${stat.bgGradient} dark:bg-gradient-to-br dark:${stat.darkBg} opacity-50`}></div>
+                            <div className="relative z-10">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div>
+                                        <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>
+                                            {stat.name}
+                                        </p>
+                                        <p className="text-4xl font-bold" style={{ color: 'var(--text-primary)' }}>
+                                            {stat.value}
+                                        </p>
+                                    </div>
+                                    <div className={`w-16 h-16 bg-gradient-to-br ${stat.gradient} rounded-2xl flex items-center justify-center text-3xl shadow-lg`}>
+                                        {stat.icon}
+                                    </div>
                                 </div>
-                                <div className={`w-14 h-14 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center text-2xl shadow-lg`}>
-                                    {stat.icon}
-                                </div>
+                                {statusFilter === stat.filter && (
+                                    <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: 'var(--primary)' }}>
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        Active Filter
+                                    </div>
+                                )}
                             </div>
                         </button>
                     ))}
                 </div>
 
                 {/* Complaints Section */}
-                <div className="glass rounded-2xl shadow-xl border border-gray-100 dark:border-slate-800 p-6 scale-in">
+                <div className="modern-card">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                         <div>
-                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                            <h3 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
                                 {statusFilter ? `${statusFilter.replace('_', ' ')} Complaints` : 'My Complaints'}
                             </h3>
-                            <p className="text-gray-600 dark:text-gray-400 mt-1">
+                            <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
                                 {statusFilter
                                     ? `Showing ${filteredComplaints.length} of ${complaints.length} complaints`
                                     : 'Track and manage all your submitted complaints'
@@ -164,37 +220,43 @@ export const Dashboard: React.FC = () => {
                         </div>
                         <div className="flex gap-3 w-full sm:w-auto">
                             {statusFilter && (
-                                <Button
-                                    variant="outline"
-                                    size="sm"
+                                <button
                                     onClick={() => setStatusFilter(null)}
-                                    className="flex-1 sm:flex-none"
+                                    className="flex-1 sm:flex-none px-4 py-2 rounded-xl font-semibold text-sm transition-all hover:scale-105 flex items-center justify-center gap-2"
+                                    style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
                                 >
-                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                     Clear Filter
-                                </Button>
+                                </button>
                             )}
-                            <Button onClick={() => setIsCreateModalOpen(true)} className="flex-1 sm:flex-none">
-                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <button
+                                onClick={() => setIsCreateModalOpen(true)}
+                                className="flex-1 sm:flex-none px-6 py-2 rounded-xl font-semibold text-white text-sm transition-all hover:scale-105 flex items-center justify-center gap-2 shadow-lg"
+                                style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                                 </svg>
                                 New Complaint
-                            </Button>
+                            </button>
                         </div>
                     </div>
 
                     {filteredComplaints.length === 0 ? (
-                        <div className="text-center py-12">
-                            <svg className="w-16 h-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            <p className="text-gray-600 dark:text-gray-400 text-lg">
+                        <div className="text-center py-16">
+                            <div className="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center"
+                                style={{ background: 'var(--bg-secondary)' }}>
+                                <svg className="w-12 h-12" style={{ color: 'var(--text-tertiary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            </div>
+                            <h4 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
                                 {statusFilter ? `No ${statusFilter.toLowerCase().replace('_', ' ')} complaints found` : 'No complaints yet'}
-                            </p>
+                            </h4>
                             {!statusFilter && (
-                                <p className="text-gray-500 dark:text-gray-500 text-sm mt-2">
+                                <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
                                     Click "New Complaint" to submit your first complaint
                                 </p>
                             )}
@@ -204,54 +266,74 @@ export const Dashboard: React.FC = () => {
                             {filteredComplaints.map((complaint: any) => (
                                 <div
                                     key={complaint.id}
-                                    className="glass rounded-xl p-5 hover:shadow-lg transition-all duration-300 border border-gray-100 dark:border-slate-700"
+                                    className="p-5 rounded-xl transition-all hover-lift"
+                                    style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}
                                 >
                                     <div className="flex items-start justify-between mb-3">
-                                        <h4 className="text-lg font-bold text-gray-900 dark:text-white">{complaint.title}</h4>
-                                        <span className={`px-3 py-1 text-xs font-semibold rounded-full ${complaint.status === 'RESOLVED' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                                            complaint.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
-                                                complaint.status === 'REJECTED' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
-                                                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
-                                            }`}>
+                                        <h4 className="text-lg font-bold flex-1" style={{ color: 'var(--text-primary)' }}>
+                                            {complaint.title}
+                                        </h4>
+                                        <span className={`badge badge-${complaint.status.toLowerCase().replace('_', '-')}`}>
                                             {complaint.status}
                                         </span>
                                     </div>
-                                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">{complaint.description}</p>
-                                    <div className="flex items-center justify-between gap-4">
-                                        <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-500">
-                                            <span className={`px-2 py-1 rounded-full ${complaint.urgency === 'HIGH' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
-                                                complaint.urgency === 'MEDIUM' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400' :
-                                                    'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400'
-                                                }`}>
-                                                {complaint.urgency} Priority
+
+                                    <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>
+                                        {complaint.description}
+                                    </p>
+
+                                    <div className="flex items-center gap-4 text-sm mb-4">
+                                        {complaint.location && (
+                                            <span className="flex items-center gap-1" style={{ color: 'var(--text-tertiary)' }}>
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
+                                                {complaint.location}
                                             </span>
-                                            {complaint.location && (
-                                                <span className="flex items-center gap-1">
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                    </svg>
-                                                    {complaint.location}
-                                                </span>
-                                            )}
-                                            <span>
-                                                Created: {new Date(complaint.createdAt).toLocaleDateString()}
-                                            </span>
+                                        )}
+                                        <span style={{ color: 'var(--text-tertiary)' }}>
+                                            {new Date(complaint.createdAt).toLocaleDateString()}
+                                        </span>
+                                    </div>
+
+                                    {/* Timeline */}
+                                    <div className="mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className={`w-3 h-3 rounded-full ${complaint.status === 'PENDING' ? 'bg-yellow-500' : 'bg-green-500'}`}></div>
+                                            <div className="flex-1 h-1 bg-gray-200 dark:bg-gray-700 rounded">
+                                                <div
+                                                    className="h-full bg-gradient-to-r from-yellow-500 to-green-500 rounded transition-all"
+                                                    style={{
+                                                        width: complaint.status === 'PENDING' ? '33%' :
+                                                            complaint.status === 'IN_PROGRESS' ? '66%' : '100%'
+                                                    }}
+                                                ></div>
+                                            </div>
+                                            <div className={`w-3 h-3 rounded-full ${complaint.status === 'RESOLVED' ? 'bg-green-500' : 'bg-gray-300'}`}></div>
                                         </div>
+                                        <div className="flex justify-between mt-1 text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                                            <span>Submitted</span>
+                                            <span>In Progress</span>
+                                            <span>Resolved</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-end">
                                         {complaint.status === 'PENDING' && (
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
+                                            <button
                                                 onClick={() => {
                                                     setSelectedComplaint(complaint);
                                                     setIsEditModalOpen(true);
                                                 }}
+                                                className="px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:scale-105 flex items-center gap-2"
+                                                style={{ background: 'var(--primary)', color: 'white' }}
                                             >
-                                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                 </svg>
                                                 Edit
-                                            </Button>
+                                            </button>
                                         )}
                                     </div>
                                 </div>
@@ -259,7 +341,7 @@ export const Dashboard: React.FC = () => {
                         </div>
                     )}
                 </div>
-            </main>
+            </main >
 
             <CreateComplaintModal
                 isOpen={isCreateModalOpen}
@@ -275,6 +357,6 @@ export const Dashboard: React.FC = () => {
                 complaint={selectedComplaint}
                 onUpdate={handleComplaintUpdate}
             />
-        </div>
+        </div >
     );
 };

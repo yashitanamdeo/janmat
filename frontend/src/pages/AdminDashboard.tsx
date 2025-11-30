@@ -2,8 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../store/store';
 import { fetchComplaintsStart, fetchComplaintsSuccess, fetchComplaintsFailure } from '../store/slices/complaintSlice';
-import { Button } from '../components/ui/Button';
-import { AnalyticsCards } from '../components/admin/AnalyticsCards';
 import { AssignmentModal } from '../components/admin/AssignmentModal';
 import { logout } from '../store/slices/authSlice';
 import { useNavigate } from 'react-router-dom';
@@ -66,165 +64,294 @@ export const AdminDashboard: React.FC = () => {
         setSelectedComplaintTitle(complaintTitle);
     };
 
-    // Filter complaints based on status or assignment
     const filteredComplaints = statusFilter === 'ALL'
         ? complaints
         : statusFilter === 'UNASSIGNED'
             ? complaints.filter(c => !(c as any).assignedTo)
             : complaints.filter(c => c.status === statusFilter);
 
-    // Calculate stats
-    const stats = {
-        total: complaints.length,
-        pending: complaints.filter(c => c.status === 'PENDING').length,
-        inProgress: complaints.filter(c => c.status === 'IN_PROGRESS').length,
-        resolved: complaints.filter(c => c.status === 'RESOLVED').length,
-        unassigned: complaints.filter(c => !(c as any).assignedTo).length,
-    };
+    const stats = [
+        {
+            name: 'Total Complaints',
+            value: complaints.length,
+            icon: '📋',
+            gradient: 'from-blue-500 to-blue-600',
+            bgGradient: 'from-blue-50 to-blue-100',
+            darkBg: 'from-blue-900/20 to-blue-800/20',
+            filter: 'ALL'
+        },
+        {
+            name: 'Unassigned',
+            value: complaints.filter(c => !(c as any).assignedTo).length,
+            icon: '⚠️',
+            gradient: 'from-red-500 to-red-600',
+            bgGradient: 'from-red-50 to-red-100',
+            darkBg: 'from-red-900/20 to-red-800/20',
+            filter: 'UNASSIGNED'
+        },
+        {
+            name: 'Pending',
+            value: complaints.filter(c => c.status === 'PENDING').length,
+            icon: '⏳',
+            gradient: 'from-yellow-500 to-orange-500',
+            bgGradient: 'from-yellow-50 to-orange-100',
+            darkBg: 'from-yellow-900/20 to-orange-800/20',
+            filter: 'PENDING'
+        },
+        {
+            name: 'Resolved',
+            value: complaints.filter(c => c.status === 'RESOLVED').length,
+            icon: '✅',
+            gradient: 'from-green-500 to-emerald-600',
+            bgGradient: 'from-green-50 to-emerald-100',
+            darkBg: 'from-green-900/20 to-emerald-800/20',
+            filter: 'RESOLVED'
+        },
+    ];
 
     return (
-        <div className="min-h-screen transition-colors duration-300">
-            <nav className="bg-white shadow-sm">
+        <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
+            {/* Modern Navigation */}
+            <nav className="modern-card" style={{ borderRadius: '0', borderLeft: '0', borderRight: '0', borderTop: '0', position: 'sticky', top: 0, zIndex: 50 }}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between h-16">
-                        <div className="flex items-center">
-                            <h1 className="text-xl font-bold text-gray-900">JanMat Admin</h1>
+                    <div className="flex justify-between items-center h-20">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg"
+                                style={{ background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)' }}>
+                                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h1 className="text-2xl font-bold" style={{ background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                                    JanMat
+                                </h1>
+                                <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Admin Dashboard</p>
+                            </div>
                         </div>
-                        <div className="flex items-center space-x-4">
+                        <div className="flex items-center gap-4">
                             <ThemeToggle />
-                            <span className="text-gray-700">Welcome, {user?.name}</span>
-                            <Button variant="outline" size="sm" onClick={handleLogout}>
-                                Logout
-                            </Button>
+                            <button
+                                onClick={() => navigate('/profile')}
+                                className="hidden md:flex items-center gap-3 px-4 py-2 rounded-xl transition-all hover:scale-105"
+                                style={{ background: 'var(--bg-secondary)' }}
+                            >
+                                <div className="text-right">
+                                    <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{user?.name}</p>
+                                    <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Administrator</p>
+                                </div>
+                                <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-md"
+                                    style={{ background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)' }}>
+                                    {user?.name?.charAt(0).toUpperCase()}
+                                </div>
+                            </button>
+                            <button
+                                onClick={handleLogout}
+                                className="px-4 py-2 rounded-xl font-semibold text-sm transition-all hover:scale-105"
+                                style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </div>
             </nav>
 
-            <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-                <div className="px-4 py-6 sm:px-0 space-y-6">
-                    {/* Stats Cards with Filter */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <button
-                            onClick={() => setStatusFilter('ALL')}
-                            className={`p-6 rounded-lg shadow transition-all ${statusFilter === 'ALL'
-                                ? 'bg-blue-600 text-white ring-4 ring-blue-300'
-                                : 'bg-white hover:shadow-lg'
-                                }`}
-                        >
-                            <div className="text-sm font-semibold mb-1">Total Complaints</div>
-                            <div className="text-3xl font-bold">{stats.total}</div>
-                        </button>
-                        <button
-                            onClick={() => setStatusFilter('PENDING')}
-                            className={`p-6 rounded-lg shadow transition-all ${statusFilter === 'PENDING'
-                                ? 'bg-yellow-600 text-white ring-4 ring-yellow-300'
-                                : 'bg-white hover:shadow-lg'
-                                }`}
-                        >
-                            <div className="text-sm font-semibold mb-1">Pending</div>
-                            <div className="text-3xl font-bold">{stats.pending}</div>
-                        </button>
-                        <button
-                            onClick={() => setStatusFilter('IN_PROGRESS')}
-                            className={`p-6 rounded-lg shadow transition-all ${statusFilter === 'IN_PROGRESS'
-                                ? 'bg-purple-600 text-white ring-4 ring-purple-300'
-                                : 'bg-white hover:shadow-lg'
-                                }`}
-                        >
-                            <div className="text-sm font-semibold mb-1">In Progress</div>
-                            <div className="text-3xl font-bold">{stats.inProgress}</div>
-                        </button>
-                        <button
-                            onClick={() => setStatusFilter('RESOLVED')}
-                            className={`p-6 rounded-lg shadow transition-all ${statusFilter === 'RESOLVED'
-                                ? 'bg-green-600 text-white ring-4 ring-green-300'
-                                : 'bg-white hover:shadow-lg'
-                                }`}
-                        >
-                            <div className="text-sm font-semibold mb-1">Resolved</div>
-                            <div className="text-3xl font-bold">{stats.resolved}</div>
-                        </button>
-                        <button
-                            onClick={() => setStatusFilter('UNASSIGNED')}
-                            className={`p-6 rounded-lg shadow transition-all ${statusFilter === 'UNASSIGNED'
-                                ? 'bg-orange-600 text-white ring-4 ring-orange-300'
-                                : 'bg-white hover:shadow-lg'
-                                }`}
-                        >
-                            <div className="text-sm font-semibold mb-1">Unassigned</div>
-                            <div className="text-3xl font-bold">{stats.unassigned}</div>
-                        </button>
+            {/* Main Content */}
+            <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+                {/* Welcome Banner */}
+                <div className="mb-8 p-8 rounded-2xl relative overflow-hidden fade-in"
+                    style={{ background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)' }}>
+                    <div className="absolute inset-0 opacity-10">
+                        <div className="absolute -top-20 -right-20 w-40 h-40 bg-white rounded-full blur-3xl"></div>
+                        <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-white rounded-full blur-3xl"></div>
                     </div>
-
-                    <div className="flex justify-end space-x-4">
-                        <Button variant="outline" onClick={() => handleExport('csv')}>Export CSV</Button>
-                        <Button variant="outline" onClick={() => handleExport('pdf')}>Export PDF</Button>
-                    </div>
-
-                    <div className="bg-white shadow rounded-lg overflow-hidden">
-                        <div className="px-4 py-5 sm:px-6 border-b border-gray-200 flex justify-between items-center">
-                            <div>
-                                <h3 className="text-lg leading-6 font-medium text-gray-900">
-                                    {statusFilter === 'ALL' ? 'All Complaints' : `${statusFilter.replace('_', ' ')} Complaints`}
-                                </h3>
-                                <p className="text-sm text-gray-500 mt-1">
-                                    Showing {filteredComplaints.length} of {complaints.length} complaints
-                                </p>
-                            </div>
-                            {statusFilter !== 'ALL' && (
-                                <Button size="sm" variant="outline" onClick={() => setStatusFilter('ALL')}>
-                                    Clear Filter
-                                </Button>
-                            )}
+                    <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <h2 className="text-3xl font-bold text-white mb-2">
+                                Dashboard Overview
+                            </h2>
+                            <p className="text-white text-opacity-90">
+                                Monitor system performance and manage complaints
+                            </p>
                         </div>
-                        <ul className="divide-y divide-gray-200">
-                            {filteredComplaints.map((complaint) => (
-                                <li key={complaint.id} className="px-4 py-4 sm:px-6 hover:bg-gray-50">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex-1 min-w-0">
-                                            <h4 className="text-lg font-bold text-gray-900 truncate">{complaint.title}</h4>
-                                            <p className="text-sm text-gray-500">{complaint.description}</p>
-                                            <div className="mt-2 flex items-center text-sm text-gray-500 space-x-4">
-                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${complaint.status === 'RESOLVED' ? 'bg-green-100 text-green-800' :
-                                                    complaint.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-800' :
-                                                        'bg-yellow-100 text-yellow-800'
-                                                    }`}>
-                                                    {complaint.status}
-                                                </span>
-                                                <span>Urgency: {complaint.urgency}</span>
-                                                {(complaint as any).assignedOfficer && (
-                                                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                                                        👤 {(complaint as any).assignedOfficer.name}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <Button size="sm" onClick={() => handleAssignClick(complaint.id, complaint.title)}>
-                                                {(complaint as any).assignedTo ? 'Reassign' : 'Assign'}
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={loadData}
+                                className="px-4 py-2 rounded-xl font-semibold text-white bg-white bg-opacity-20 hover:bg-opacity-30 transition-all hover:scale-105 flex items-center gap-2 border border-white border-opacity-30"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                Refresh
+                            </button>
+                            <button
+                                onClick={() => handleExport('csv')}
+                                className="px-4 py-2 rounded-xl font-semibold text-blue-600 bg-white transition-all hover:scale-105 flex items-center gap-2 shadow-lg"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                Export CSV
+                            </button>
+                            <button
+                                onClick={() => handleExport('pdf')}
+                                className="px-4 py-2 rounded-xl font-semibold text-white bg-blue-700 bg-opacity-50 hover:bg-opacity-70 transition-all hover:scale-105 flex items-center gap-2 border border-blue-400 border-opacity-30"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Export PDF
+                            </button>
+                        </div>
                     </div>
+                </div>
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    {stats.map((stat, index) => (
+                        <button
+                            key={stat.name}
+                            onClick={() => setStatusFilter(stat.filter)}
+                            className={`modern-card hover-lift transition-all duration-300 text-left relative overflow-hidden ${statusFilter === stat.filter ? 'ring-4 ring-offset-2' : ''
+                                }`}
+                            style={{
+                                animationDelay: `${index * 100}ms`,
+                                ringColor: statusFilter === stat.filter ? 'var(--primary)' : 'transparent'
+                            }}
+                        >
+                            <div className={`absolute inset-0 bg-gradient-to-br ${stat.bgGradient} dark:bg-gradient-to-br dark:${stat.darkBg} opacity-50`}></div>
+                            <div className="relative z-10">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div>
+                                        <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>
+                                            {stat.name}
+                                        </p>
+                                        <p className="text-4xl font-bold" style={{ color: 'var(--text-primary)' }}>
+                                            {stat.value}
+                                        </p>
+                                    </div>
+                                    <div className={`w-16 h-16 bg-gradient-to-br ${stat.gradient} rounded-2xl flex items-center justify-center text-3xl shadow-lg`}>
+                                        {stat.icon}
+                                    </div>
+                                </div>
+                                {statusFilter === stat.filter && (
+                                    <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: 'var(--primary)' }}>
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        Active Filter
+                                    </div>
+                                )}
+                            </div>
+                        </button>
+                    ))}
+                </div>
+
+                {/* Complaints Table */}
+                <div className="modern-card overflow-hidden">
+                    <div className="mb-6">
+                        <h3 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+                            {statusFilter === 'ALL' ? 'All Complaints' :
+                                statusFilter === 'UNASSIGNED' ? 'Unassigned Complaints' :
+                                    `${statusFilter.replace('_', ' ')} Complaints`}
+                        </h3>
+                        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+                            Showing {filteredComplaints.length} of {complaints.length} complaints
+                        </p>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead>
+                                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Complaint</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Status</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Urgency</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Assigned To</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Date</th>
+                                    <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y" style={{ divideColor: 'var(--border-color)' }}>
+                                {filteredComplaints.map((complaint: any) => (
+                                    <tr key={complaint.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
+                                        <td className="px-6 py-4">
+                                            <div>
+                                                <div className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{complaint.title}</div>
+                                                <div className="text-xs mt-1 truncate max-w-xs" style={{ color: 'var(--text-secondary)' }}>{complaint.description}</div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`badge badge-${complaint.status.toLowerCase().replace('_', '-')}`}>
+                                                {complaint.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`px-2 py-1 rounded text-xs font-medium ${complaint.urgency === 'HIGH' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
+                                                complaint.urgency === 'MEDIUM' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400' :
+                                                    'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400'
+                                                }`}>
+                                                {complaint.urgency}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            {complaint.assignedOfficer ? (
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-xs font-bold text-blue-600 dark:text-blue-300">
+                                                        {(complaint.assignedOfficer.name || 'U').charAt(0)}
+                                                    </div>
+                                                    <span className="text-sm" style={{ color: 'var(--text-primary)' }}>
+                                                        {complaint.assignedOfficer.name || 'Unknown Officer'}
+                                                    </span>
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    onClick={() => handleAssignClick(complaint.id, complaint.title)}
+                                                    className="px-3 py-1 rounded-lg text-xs font-semibold transition-all hover:scale-105"
+                                                    style={{ background: 'var(--primary)', color: 'white' }}
+                                                >
+                                                    Assign
+                                                </button>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                                            {new Date(complaint.createdAt).toLocaleDateString()}
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <button
+                                                onClick={() => handleAssignClick(complaint.id, complaint.title)}
+                                                className="text-sm font-medium hover:underline transition-all"
+                                                style={{ color: 'var(--primary)' }}
+                                            >
+                                                {complaint.assignedOfficer ? 'Reassign' : 'Assign'}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {filteredComplaints.length === 0 && (
+                        <div className="text-center py-12">
+                            <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>No complaints found matching this filter.</p>
+                        </div>
+                    )}
                 </div>
             </main>
 
-            {selectedComplaintId && (
-                <AssignmentModal
-                    isOpen={!!selectedComplaintId}
-                    onClose={() => {
-                        setSelectedComplaintId(null);
-                        setSelectedComplaintTitle('');
-                    }}
-                    complaintId={selectedComplaintId}
-                    complaintTitle={selectedComplaintTitle}
-                    onSuccess={loadData}
-                />
-            )}
+            <AssignmentModal
+                isOpen={!!selectedComplaintId}
+                onClose={() => {
+                    setSelectedComplaintId(null);
+                    loadData();
+                }}
+                complaintId={selectedComplaintId || ''}
+                complaintTitle={selectedComplaintTitle}
+            />
         </div>
     );
 };

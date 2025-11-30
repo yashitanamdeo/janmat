@@ -109,29 +109,97 @@ export class AdminController {
     });
 
     static downloadReport = catchAsync(async (req: Request, res: Response) => {
+        const { format } = req.query;
+
         const complaints = await prisma.complaint.findMany({
             include: {
                 user: true,
                 assignedOfficer: true,
             },
+            orderBy: {
+                createdAt: 'desc',
+            },
         });
 
-        // Simple CSV export
-        const csv = [
-            ['ID', 'Title', 'Status', 'Urgency', 'Created By', 'Assigned To', 'Created At'].join(','),
-            ...complaints.map(c => [
-                c.id,
-                c.title,
-                c.status,
-                c.urgency,
-                c.user.email,
-                c.assignedOfficer?.email || 'Unassigned',
-                c.createdAt.toISOString(),
-            ].join(',')),
-        ].join('\n');
+        if (format === 'pdf') {
+            const PDFDocument = require('pdfkit');
+            const doc = new PDFDocument({ margin: 50 });
 
-        res.setHeader('Content-Type', 'text/csv');
-        res.setHeader('Content-Disposition', 'attachment; filename=complaints-report.csv');
-        res.send(csv);
+            // Set response headers
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', 'attachment; filename=complaints-report.pdf');
+
+            // Pipe PDF to response
+            doc.pipe(res);
+
+            // Add header
+            doc.fontSize(20).text('JanMat Complaints Report', { align: 'center' });
+            doc.moveDown();
+            doc.fontSize(10).text(`Generated: ${new Date().toLocaleString()}`, { align: 'center' });
+            doc.moveDown();
+
+            // Add statistics
+            const stats = {
+                total: complaints.length,
+                pending: complaints.filter(c => c.status === 'PENDING').length,
+                inProgress: complaints.filter(c => c.status === 'IN_PROGRESS').length,
+                resolved: complaints.filter(c => c.status === 'RESOLVED').length,
+                rejected: complaints.filter(c => c.status === 'REJECTED').length,
+            };
+
+            doc.fontSize(14).text('Summary Statistics', { underline: true });
+            doc.moveDown(0.5);
+            doc.fontSize(10);
+            doc.text(`Total Complaints: ${stats.total}`);
+            doc.text(`Pending: ${stats.pending}`);
+            doc.text(`In Progress: ${stats.inProgress}`);
+            doc.text(`Resolved: ${stats.resolved}`);
+            doc.text(`Rejected: ${stats.rejected}`);
+            doc.moveDown();
+
+            // Add complaints table
+            doc.fontSize(14).text('Complaint Details', { underline: true });
+            doc.moveDown(0.5);
+
+            complaints.forEach((complaint, index) => {
+                if (index > 0) doc.moveDown(0.5);
+
+                doc.fontSize(10);
+                doc.fillColor('#000000');
+                doc.text(`${index + 1}. ${complaint.title}`, { continued: false });
+                doc.fontSize(9);
+                doc.fillColor('#444444');
+                doc.text(`   Status: ${complaint.status} | Urgency: ${complaint.urgency}`);
+                doc.text(`   Assigned To: ${complaint.assignedOfficer?.name || 'Unassigned'}`);
+                doc.text(`   Created: ${new Date(complaint.createdAt).toLocaleDateString()}`);
+                doc.text(`   Description: ${complaint.description.substring(0, 100)}${complaint.description.length > 100 ? '...' : ''}`);
+
+                // Add page break if needed
+                if (doc.y > 700) {
+                    doc.addPage();
+                }
+            });
+
+            // Finalize PDF
+            doc.end();
+        } else {
+            // CSV export
+            const csv = [
+                ['ID', 'Title', 'Status', 'Urgency', 'Created By', 'Assigned To', 'Created At'].join(','),
+                ...complaints.map(c => [
+                    c.id,
+                    `"${c.title.replace(/"/g, '""')}"`,
+                    c.status,
+                    c.urgency,
+                    c.user.email,
+                    c.assignedOfficer?.name || 'Unassigned',
+                    c.createdAt.toISOString(),
+                ].join(',')),
+            ].join('\n');
+
+            res.setHeader('Content-Type', 'text/csv');
+            res.setHeader('Content-Disposition', 'attachment; filename=complaints-report.csv');
+            res.send(csv);
+        }
     });
 }

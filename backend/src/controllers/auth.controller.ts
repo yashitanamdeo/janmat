@@ -39,6 +39,12 @@ export class AuthController {
         res.status(200).json(result);
     });
 
+    static verifyMFA = catchAsync(async (req: Request, res: Response) => {
+        const { email, otp } = verifySchema.parse(req.body);
+        const result = await AuthService.verifyMFA(email, otp);
+        res.status(200).json(result);
+    });
+
     static getProfile = catchAsync(async (req: Request, res: Response) => {
         const userId = (req as any).user.id;
         const user = await AuthService.getUserProfile(userId);

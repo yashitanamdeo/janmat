@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { updateComplaint } from '../../store/slices/complaintSlice';
-import { Modal } from '../ui/Modal';
-import { Input } from '../ui/Input';
-import { Textarea } from '../ui/Textarea';
-import { Select } from '../ui/Select';
-import { Button } from '../ui/Button';
 import { MapComponent } from '../ui/MapComponent';
 import axios from 'axios';
 
@@ -58,30 +53,24 @@ export const EditComplaintModal: React.FC<EditComplaintModalProps> = ({ isOpen, 
 
         try {
             const token = localStorage.getItem('token');
-
-            const complaintData = {
-                title,
-                description,
-                urgency,
-                location
-            };
-
             const response = await axios.put(
                 `http://localhost:3000/api/complaints/${complaint.id}`,
-                complaintData,
+                {
+                    title,
+                    description,
+                    urgency,
+                    location
+                },
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json',
                     },
                 }
             );
 
-            if (response.data) {
-                dispatch(updateComplaint(response.data));
-                onUpdate();
-                onClose();
-            }
+            dispatch(updateComplaint(response.data));
+            onUpdate();
+            onClose();
         } catch (err: any) {
             setError(err.response?.data?.message || 'Failed to update complaint');
         } finally {
@@ -89,77 +78,113 @@ export const EditComplaintModal: React.FC<EditComplaintModalProps> = ({ isOpen, 
         }
     };
 
-    if (!complaint) return null;
+    if (!isOpen || !complaint) return null;
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Edit Complaint" size="lg">
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <Input
-                    label="Title"
-                    required
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Brief description of the issue"
-                    icon={
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fade-in" onClick={onClose}>
+            <div className="modern-card max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                        Edit Complaint
+                    </h2>
+                    <button onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
-                    }
-                />
-
-                <Textarea
-                    label="Description"
-                    rows={4}
-                    required
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Provide detailed information about the complaint..."
-                />
-
-                <Select
-                    label="Urgency"
-                    value={urgency}
-                    onChange={(e) => setUrgency(e.target.value)}
-                    options={urgencyOptions}
-                />
-
-                <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Location</label>
-                    <MapComponent onLocationSelect={(lat, lng) => setLocation(`${lat},${lng}`)} />
-                    <input type="hidden" value={location} />
-                    {location && (
-                        <p className="mt-2 text-sm text-gray-600 flex items-center gap-2">
-                            <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                            </svg>
-                            <span className="font-medium">Location: {location}</span>
-                        </p>
-                    )}
+                    </button>
                 </div>
 
-                {error && (
-                    <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
-                        <div className="flex items-center">
-                            <svg className="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                            </svg>
-                            <span className="text-red-700 font-medium">{error}</span>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div>
+                        <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Title</label>
+                        <input
+                            type="text"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            className="modern-input"
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Description</label>
+                        <textarea
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            className="modern-input"
+                            rows={4}
+                            required
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Urgency</label>
+                            <select
+                                value={urgency}
+                                onChange={(e) => setUrgency(e.target.value)}
+                                className="modern-input"
+                            >
+                                {urgencyOptions.map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Location</label>
+                            <input
+                                type="text"
+                                value={location}
+                                onChange={(e) => setLocation(e.target.value)}
+                                className="modern-input"
+                            />
                         </div>
                     </div>
-                )}
 
-                <div className="flex gap-4 pt-4 border-t border-gray-200">
-                    <Button type="button" variant="outline" onClick={onClose} className="flex-1">
-                        Cancel
-                    </Button>
-                    <Button type="submit" isLoading={loading} className="flex-1">
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                        Save Changes
-                    </Button>
-                </div>
-            </form>
-        </Modal>
+                    <div>
+                        <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Location on Map</label>
+                        <div className="h-64 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+                            <MapComponent
+                                isMarkerDraggable={true}
+                                onLocationSelect={(loc) => {
+                                    setLocation(`${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)}`);
+                                }}
+                            />
+                        </div>
+                    </div>
+
+                    {error && (
+                        <div className="p-4 rounded-xl flex items-center gap-3" style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#EF4444' }}>
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {error}
+                        </div>
+                    )}
+
+                    <div className="flex gap-4 pt-4 border-t" style={{ borderColor: 'var(--border-color)' }}>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="flex-1 px-6 py-3 rounded-xl font-semibold transition-all hover:scale-105"
+                            style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="flex-1 px-6 py-3 rounded-xl font-semibold text-white transition-all hover:scale-105 shadow-lg"
+                            style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
+                        >
+                            {loading ? 'Saving...' : 'Save Changes'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     );
 };

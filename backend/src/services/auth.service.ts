@@ -73,6 +73,21 @@ export class AuthService {
         return { user, token: tokens.accessToken, ...tokens };
     }
 
+    static async verifyMFA(email: string, otp: string) {
+        const isValid = await OTPService.verifyOTP(email, otp);
+        if (!isValid) {
+            throw new AppError('Invalid or expired OTP', 400);
+        }
+
+        const user = await prisma.user.findUnique({ where: { email } });
+        if (!user) {
+            throw new AppError('User not found', 404);
+        }
+
+        const tokens = TokenService.generateTokens({ id: user.id, role: user.role });
+        return { user, token: tokens.accessToken, ...tokens };
+    }
+
     static async getUserProfile(userId: string) {
         const user = await prisma.user.findUnique({
             where: { id: userId },

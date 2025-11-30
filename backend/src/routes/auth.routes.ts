@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.post('/register', AuthController.register);
 router.post('/verify', AuthController.verify);
+router.post('/verify-mfa', AuthController.verifyMFA);
 router.post('/login', AuthController.login);
 router.get('/profile', protect, AuthController.getProfile);
 router.put('/profile', protect, AuthController.updateProfile);
