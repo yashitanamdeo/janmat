@@ -4,10 +4,19 @@ import { Button } from '../ui/Button';
 import { Select } from '../ui/Select';
 import axios from 'axios';
 
+interface Department {
+    id: string;
+    name: string;
+}
+
 interface Officer {
     id: string;
     name: string;
     email: string;
+    department?: {
+        id: string;
+        name: string;
+    };
 }
 
 interface AssignmentModalProps {
@@ -26,65 +35,70 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
     onSuccess
 }) => {
     const [officers, setOfficers] = useState<Officer[]>([]);
+    const [departments, setDepartments] = useState<Department[]>([]);
     const [selectedOfficer, setSelectedOfficer] = useState('');
+    const [selectedDepartment, setSelectedDepartment] = useState('');
     const [loading, setLoading] = useState(false);
-    const [fetchingOfficers, setFetchingOfficers] = useState(true);
+    const [fetchingData, setFetchingData] = useState(true);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
     useEffect(() => {
         if (isOpen) {
-            fetchOfficers();
+            fetchData();
         }
     }, [isOpen]);
 
-    const fetchOfficers = async () => {
-        setFetchingOfficers(true);
+    const fetchData = async () => {
+        setFetchingData(true);
         setError('');
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get(
-                'http://localhost:3000/api/admin/officers',
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setOfficers(response.data || []);
+            const [officersRes, departmentsRes] = await Promise.all([
+                axios.get('http://localhost:3000/api/admin/officers', {
+                    headers: { Authorization: `Bearer ${token}` }
+                }),
+                axios.get('http://localhost:3000/api/departments', {
+                    headers: { Authorization: `Bearer ${token}` }
+                })
+            ]);
+            setOfficers(officersRes.data || []);
+            setDepartments(departmentsRes.data || []);
         } catch (err: any) {
-            console.error('Failed to fetch officers:', err);
-            setError('Failed to load officers. Please try again.');
+            console.error('Failed to fetch data:', err);
+            setError('Failed to load data. Please try again.');
         } finally {
-            setFetchingOfficers(false);
+            setFetchingData(false);
         }
     };
 
     const handleAssign = async () => {
-        if (!selectedOfficer) return;
-
         setLoading(true);
         setError('');
         setSuccess('');
 
         try {
             const token = localStorage.getItem('token');
-            await axios.post(
-                'http://localhost:3000/api/admin/assign-complaint',
+            // Use the new endpoint that handles both department and officer assignment
+            await axios.patch(
+                `http://localhost:3000/api/admin/complaints/${complaintId}/department`,
                 {
-                    complaintId,
-                    officerId: selectedOfficer
+                    departmentId: selectedDepartment || null,
+                    officerId: selectedOfficer || undefined
                 },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
             setSuccess('Complaint assigned successfully!');
 
-            // Call onSuccess callback if provided
             if (onSuccess) {
                 onSuccess();
             }
 
-            // Close modal after a short delay
             setTimeout(() => {
                 onClose();
                 setSelectedOfficer('');
+                setSelectedDepartment('');
                 setSuccess('');
             }, 1500);
         } catch (err: any) {
@@ -95,16 +109,29 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
         }
     };
 
+    // Filter officers based on selected department
+    const filteredOfficers = selectedDepartment
+        ? officers.filter(o => o.department?.id === selectedDepartment)
+        : officers;
+
+    const departmentOptions = [
+        { value: '', label: 'Select Department (Optional)' },
+        ...departments.map(dept => ({
+            value: dept.id,
+            label: dept.name
+        }))
+    ];
+
     const officerOptions = [
-        { value: '', label: 'Select an officer...' },
-        ...officers.map(officer => ({
+        { value: '', label: 'Select Officer (Optional)' },
+        ...filteredOfficers.map(officer => ({
             value: officer.id,
-            label: `${officer.name} (${officer.email})`
+            label: `${officer.name} ${officer.department ? `(${officer.department.name})` : '(No Dept)'}`
         }))
     ];
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Assign Complaint to Officer">
+        <Modal isOpen={isOpen} onClose={onClose} title="Assign Complaint">
             <div className="space-y-6">
                 <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
                     <div className="flex items-start">
@@ -118,26 +145,36 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
                     </div>
                 </div>
 
-                {fetchingOfficers ? (
+                {fetchingData ? (
                     <div className="flex items-center justify-center py-8">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                        <span className="ml-3 text-gray-600">Loading officers...</span>
-                    </div>
-                ) : officers.length === 0 ? (
-                    <div className="text-center py-8">
-                        <svg className="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                        </svg>
-                        <p className="text-gray-600">No officers available</p>
+                        <span className="ml-3 text-gray-600">Loading data...</span>
                     </div>
                 ) : (
-                    <div>
-                        <Select
-                            label="Select Officer"
-                            value={selectedOfficer}
-                            onChange={(e) => setSelectedOfficer(e.target.value)}
-                            options={officerOptions}
-                        />
+                    <div className="space-y-4">
+                        <div>
+                            <Select
+                                label="Department"
+                                value={selectedDepartment}
+                                onChange={(e) => {
+                                    setSelectedDepartment(e.target.value);
+                                    setSelectedOfficer(''); // Reset officer when department changes
+                                }}
+                                options={departmentOptions}
+                            />
+                            <p className="text-xs text-gray-500 mt-1">
+                                Selecting a department will filter the officer list.
+                            </p>
+                        </div>
+
+                        <div>
+                            <Select
+                                label="Officer"
+                                value={selectedOfficer}
+                                onChange={(e) => setSelectedOfficer(e.target.value)}
+                                options={officerOptions}
+                            />
+                        </div>
                     </div>
                 )}
 
@@ -176,13 +213,13 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
                     <Button
                         onClick={handleAssign}
                         isLoading={loading}
-                        disabled={!selectedOfficer || fetchingOfficers}
+                        disabled={fetchingData || (!selectedDepartment && !selectedOfficer)}
                         className="flex-1"
                     >
                         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        Assign Officer
+                        Assign
                     </Button>
                 </div>
             </div>

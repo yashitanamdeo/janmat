@@ -7,6 +7,9 @@ import { logout } from '../store/slices/authSlice';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
+import { TrendsChart } from '../components/analytics/TrendsChart';
+import { PerformanceChart } from '../components/analytics/PerformanceChart';
+import { HelpModal } from '../components/ui/HelpModal';
 
 export const AdminDashboard: React.FC = () => {
     const dispatch = useDispatch();
@@ -16,6 +19,10 @@ export const AdminDashboard: React.FC = () => {
     const [selectedComplaintId, setSelectedComplaintId] = useState<string | null>(null);
     const [selectedComplaintTitle, setSelectedComplaintTitle] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('ALL');
+    const [trendsData, setTrendsData] = useState([]);
+    const [performanceData, setPerformanceData] = useState([]);
+    const [showAnalytics, setShowAnalytics] = useState(false);
+    const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -29,6 +36,17 @@ export const AdminDashboard: React.FC = () => {
                 headers: { Authorization: `Bearer ${token}` },
             });
             dispatch(fetchComplaintsSuccess(response.data));
+
+            // Load analytics
+            const trendsRes = await axios.get('http://localhost:3000/api/analytics/trends', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setTrendsData(trendsRes.data);
+
+            const perfRes = await axios.get('http://localhost:3000/api/analytics/department-performance', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setPerformanceData(perfRes.data);
         } catch (err: any) {
             dispatch(fetchComplaintsFailure(err.message));
         }
@@ -132,6 +150,15 @@ export const AdminDashboard: React.FC = () => {
                         <div className="flex items-center gap-4">
                             <ThemeToggle />
                             <button
+                                onClick={() => setIsHelpModalOpen(true)}
+                                className="p-2 rounded-xl transition-all hover:scale-105 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                title="Help & Support"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--text-secondary)' }}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </button>
+                            <button
                                 onClick={() => navigate('/profile')}
                                 className="hidden md:flex items-center gap-3 px-4 py-2 rounded-xl transition-all hover:scale-105"
                                 style={{ background: 'var(--bg-secondary)' }}
@@ -177,7 +204,7 @@ export const AdminDashboard: React.FC = () => {
                                 Monitor system performance and manage complaints
                             </p>
                         </div>
-                        <div className="flex gap-3">
+                        <div className="flex gap-3 flex-wrap">
                             <button
                                 onClick={loadData}
                                 className="px-4 py-2 rounded-xl font-semibold text-white bg-white bg-opacity-20 hover:bg-opacity-30 transition-all hover:scale-105 flex items-center gap-2 border border-white border-opacity-30"
@@ -201,13 +228,62 @@ export const AdminDashboard: React.FC = () => {
                                 className="px-4 py-2 rounded-xl font-semibold text-white bg-blue-700 bg-opacity-50 hover:bg-opacity-70 transition-all hover:scale-105 flex items-center gap-2 border border-blue-400 border-opacity-30"
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                                 </svg>
                                 Export PDF
+                            </button>
+                            <button
+                                onClick={() => navigate('/admin/departments')}
+                                className="px-4 py-2 rounded-xl font-semibold text-white bg-purple-600 bg-opacity-50 hover:bg-opacity-70 transition-all hover:scale-105 flex items-center gap-2 border border-purple-400 border-opacity-30"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                                Departments
+                            </button>
+                            <button
+                                onClick={() => navigate('/admin/officers')}
+                                className="px-4 py-2 rounded-xl font-semibold text-white bg-green-600 bg-opacity-50 hover:bg-opacity-70 transition-all hover:scale-105 flex items-center gap-2 border border-green-400 border-opacity-30"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                                Officers
+                            </button>
+                            <button
+                                onClick={() => navigate('/admin/feedback')}
+                                className="px-4 py-2 rounded-xl font-semibold text-white bg-yellow-600 bg-opacity-50 hover:bg-opacity-70 transition-all hover:scale-105 flex items-center gap-2 border border-yellow-400 border-opacity-30"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                                </svg>
+                                Feedback
+                            </button>
+                            <button
+                                onClick={() => setShowAnalytics(!showAnalytics)}
+                                className={`px-4 py-2 rounded-xl font-semibold transition-all hover:scale-105 flex items-center gap-2 shadow-lg ${showAnalytics ? 'bg-blue-600 text-white' : 'bg-white text-blue-600'}`}
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                                {showAnalytics ? 'Hide Analytics' : 'Show Analytics'}
                             </button>
                         </div>
                     </div>
                 </div>
+
+                {showAnalytics && (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 animate-fade-in">
+                        <div className="modern-card p-6">
+                            <h3 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Complaint Trends</h3>
+                            <TrendsChart data={trendsData} />
+                        </div>
+                        <div className="modern-card p-6">
+                            <h3 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Department Performance</h3>
+                            <PerformanceChart data={performanceData} />
+                        </div>
+                    </div>
+                )}
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -215,11 +291,10 @@ export const AdminDashboard: React.FC = () => {
                         <button
                             key={stat.name}
                             onClick={() => setStatusFilter(stat.filter)}
-                            className={`modern-card hover-lift transition-all duration-300 text-left relative overflow-hidden ${statusFilter === stat.filter ? 'ring-4 ring-offset-2' : ''
+                            className={`modern-card hover-lift transition-all duration-300 text-left relative overflow-hidden ${statusFilter === stat.filter ? 'ring-4 ring-offset-2 ring-[var(--primary)]' : ''
                                 }`}
                             style={{
-                                animationDelay: `${index * 100}ms`,
-                                ringColor: statusFilter === stat.filter ? 'var(--primary)' : 'transparent'
+                                animationDelay: `${index * 100}ms`
                             }}
                         >
                             <div className={`absolute inset-0 bg-gradient-to-br ${stat.bgGradient} dark:bg-gradient-to-br dark:${stat.darkBg} opacity-50`}></div>
@@ -275,7 +350,7 @@ export const AdminDashboard: React.FC = () => {
                                     <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Action</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y" style={{ divideColor: 'var(--border-color)' }}>
+                            <tbody className="divide-y divide-[var(--border-color)]">
                                 {filteredComplaints.map((complaint: any) => (
                                     <tr key={complaint.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
                                         <td className="px-6 py-4">
@@ -351,6 +426,12 @@ export const AdminDashboard: React.FC = () => {
                 }}
                 complaintId={selectedComplaintId || ''}
                 complaintTitle={selectedComplaintTitle}
+            />
+
+            <HelpModal
+                isOpen={isHelpModalOpen}
+                onClose={() => setIsHelpModalOpen(false)}
+                role="ADMIN"
             />
         </div>
     );

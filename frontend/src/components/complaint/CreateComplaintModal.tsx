@@ -15,8 +15,28 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({ isOp
     const [description, setDescription] = useState('');
     const [urgency, setUrgency] = useState('LOW');
     const [location, setLocation] = useState('');
+    const [departmentId, setDepartmentId] = useState('');
+    const [departments, setDepartments] = useState<any[]>([]);
     const [files, setFiles] = useState<FileList | null>(null);
     const [loading, setLoading] = useState(false);
+
+    React.useEffect(() => {
+        const fetchDepartments = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await axios.get('http://localhost:3000/api/departments', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setDepartments(response.data);
+            } catch (error) {
+                console.error('Failed to fetch departments:', error);
+            }
+        };
+
+        if (isOpen) {
+            fetchDepartments();
+        }
+    }, [isOpen]);
 
     const urgencyOptions = [
         { value: 'LOW', label: 'Low' },
@@ -33,7 +53,11 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({ isOp
             formData.append('title', title);
             formData.append('description', description);
             formData.append('urgency', urgency);
+            formData.append('urgency', urgency);
             formData.append('location', location);
+            if (departmentId) {
+                formData.append('departmentId', departmentId);
+            }
 
             if (files) {
                 for (let i = 0; i < files.length; i++) {
@@ -58,7 +82,9 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({ isOp
             setTitle('');
             setDescription('');
             setUrgency('LOW');
+            setUrgency('LOW');
             setLocation('');
+            setDepartmentId('');
             setFiles(null);
         } catch (error) {
             console.error('Failed to create complaint:', error);
@@ -106,6 +132,22 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({ isOp
                             placeholder="Detailed description of the complaint..."
                             required
                         />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Department (Optional)</label>
+                        <select
+                            value={departmentId}
+                            onChange={(e) => setDepartmentId(e.target.value)}
+                            className="modern-input"
+                        >
+                            <option value="">Select Department</option>
+                            {departments.map((dept) => (
+                                <option key={dept.id} value={dept.id}>
+                                    {dept.name}
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -171,9 +213,8 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({ isOp
                         <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Location on Map</label>
                         <div className="h-64 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
                             <MapComponent
-                                isMarkerDraggable={true}
-                                onLocationSelect={(loc) => {
-                                    setLocation(`${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)}`);
+                                onLocationSelect={(lat, lng) => {
+                                    setLocation(`${lat.toFixed(6)}, ${lng.toFixed(6)}`);
                                 }}
                             />
                         </div>

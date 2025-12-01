@@ -202,4 +202,85 @@ export class AdminController {
             res.send(csv);
         }
     });
+
+    // Get all feedback for admin review
+    static getAllFeedback = catchAsync(async (req: Request, res: Response) => {
+        const feedbacks = await prisma.feedback.findMany({
+            include: {
+                complaint: {
+                    select: {
+                        id: true,
+                        title: true,
+                        status: true,
+                    },
+                },
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+        });
+
+        res.json(feedbacks);
+    });
+
+    // Update officer's department assignment
+    static updateOfficerDepartment = catchAsync(async (req: Request, res: Response) => {
+        const { officerId } = req.params;
+        const { departmentId } = req.body;
+
+        const officer = await prisma.user.update({
+            where: { id: officerId },
+            data: {
+                departmentId: departmentId || null,
+            },
+            include: {
+                department: true,
+            },
+        });
+
+        res.json(officer);
+    });
+
+    // Update complaint's department (and optionally reassign officer)
+    static updateComplaintDepartment = catchAsync(async (req: Request, res: Response) => {
+        const { id } = req.params;
+        const { departmentId, officerId } = req.body;
+
+        const updateData: any = {
+            departmentId: departmentId || null,
+        };
+
+        // If officer is provided, assign it
+        if (officerId !== undefined) {
+            updateData.assignedTo = officerId || null;
+            if (officerId) {
+                updateData.status = 'IN_PROGRESS';
+            }
+        }
+
+        const complaint = await prisma.complaint.update({
+            where: { id },
+            data: updateData,
+            include: {
+                department: true,
+                assignedOfficer: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        department: true,
+                    },
+                },
+            },
+        });
+
+        res.json(complaint);
+    });
 }

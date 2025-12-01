@@ -6,7 +6,7 @@ import { AppError } from '../utils/AppError';
 import { Role } from '@prisma/client';
 
 export class AuthService {
-    static async register(email: string, phone: string, password: string, name?: string, role: Role = Role.CITIZEN) {
+    static async register(email: string, phone: string, password: string, name?: string, dateOfBirth?: string, role: Role = Role.CITIZEN) {
         const existingUser = await prisma.user.findFirst({
             where: { OR: [{ email }, { phone }] },
         });
@@ -28,6 +28,7 @@ export class AuthService {
                 email,
                 phone,
                 password: hashedPassword,
+                dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
                 isVerified: role === Role.CITIZEN ? true : false, // Auto-verify citizens
                 role,
             },

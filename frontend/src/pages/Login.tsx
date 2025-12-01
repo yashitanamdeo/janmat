@@ -5,6 +5,7 @@ import { loginStart, loginSuccess, loginFailure } from '../store/slices/authSlic
 import type { RootState } from '../store/store';
 import axios from 'axios';
 import logo from '../assets/Janmat-logo-main.png';
+import { PasswordInput } from '../components/ui/PasswordInput';
 
 export const Login: React.FC = () => {
     const [email, setEmail] = useState('');
@@ -223,22 +224,14 @@ export const Login: React.FC = () => {
                             </div>
 
                             {/* Password Input */}
-                            <div>
-                                <label className="block text-sm font-semibold mb-2" style={{ color: '#1E293B' }}>Password</label>
-                                <div className="input-with-icon">
-                                    <svg className="input-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                    </svg>
-                                    <input
-                                        type="password"
-                                        placeholder="••••••••"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        className="modern-input"
-                                        required
-                                    />
-                                </div>
-                            </div>
+                            <PasswordInput
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="••••••••"
+                                label="Password"
+                                required
+                                autoComplete="current-password"
+                            />
 
                             {/* Remember Me & Forgot Password */}
                             <div className="flex items-center justify-between">

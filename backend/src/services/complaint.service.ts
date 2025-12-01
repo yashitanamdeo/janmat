@@ -54,7 +54,17 @@ export class ComplaintService {
     static async getMyComplaints(userId: string) {
         return await prisma.complaint.findMany({
             where: { userId },
-            include: { attachments: true, timeline: true },
+            include: {
+                attachments: true,
+                timeline: true,
+                feedback: true,
+                department: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+            },
             orderBy: { createdAt: 'desc' },
         });
     }
@@ -63,19 +73,42 @@ export class ComplaintService {
         const complaint = await prisma.complaint.findUnique({ where: { id: complaintId } });
         if (!complaint) throw new AppError('Complaint not found', 404);
 
-        const updatedComplaint = await prisma.complaint.update({
-            where: { id: complaintId },
-            data: {
-                status,
-                timeline: {
-                    create: {
-                        status,
-                        comment,
-                        updatedBy,
-                    },
+        const updateData: any = {
+            status,
+            timeline: {
+                create: {
+                    status,
+                    comment,
+                    updatedBy,
                 },
             },
-            include: { timeline: true },
+        };
+
+        // Set resolvedAt timestamp when complaint is resolved
+        if (status === Status.RESOLVED && !complaint.resolvedAt) {
+            updateData.resolvedAt = new Date();
+        }
+
+        const updatedComplaint = await prisma.complaint.update({
+            where: { id: complaintId },
+            data: updateData,
+            include: {
+                timeline: true,
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    }
+                },
+                assignedOfficer: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    }
+                }
+            },
         });
 
         // Real-time update

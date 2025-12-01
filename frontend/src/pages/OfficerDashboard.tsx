@@ -5,6 +5,7 @@ import type { RootState } from '../store/store';
 import { logout } from '../store/slices/authSlice';
 import axios from 'axios';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
+import { HelpModal } from '../components/ui/HelpModal';
 
 interface Complaint {
     id: string;
@@ -28,6 +29,7 @@ export const OfficerDashboard: React.FC = () => {
     const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
     const [newStatus, setNewStatus] = useState('');
     const [comment, setComment] = useState('');
+    const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
 
     useEffect(() => {
         loadComplaints();
@@ -140,6 +142,15 @@ export const OfficerDashboard: React.FC = () => {
                         <div className="flex items-center gap-4">
                             <ThemeToggle />
                             <button
+                                onClick={() => setIsHelpModalOpen(true)}
+                                className="p-2 rounded-xl transition-all hover:scale-105 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                title="Help & Support"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--text-secondary)' }}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </button>
+                            <button
                                 onClick={() => navigate('/profile')}
                                 className="hidden md:flex items-center gap-3 px-4 py-2 rounded-xl transition-all hover:scale-105"
                                 style={{ background: 'var(--bg-secondary)' }}
@@ -192,11 +203,10 @@ export const OfficerDashboard: React.FC = () => {
                         <button
                             key={stat.name}
                             onClick={() => setStatusFilter(stat.filter)}
-                            className={`modern-card hover-lift transition-all duration-300 text-left relative overflow-hidden ${statusFilter === stat.filter ? 'ring-4 ring-offset-2' : ''
+                            className={`modern-card hover-lift transition-all duration-300 text-left relative overflow-hidden ${statusFilter === stat.filter ? 'ring-4 ring-offset-2 ring-[var(--primary)]' : ''
                                 }`}
                             style={{
-                                animationDelay: `${index * 100}ms`,
-                                ringColor: statusFilter === stat.filter ? 'var(--primary)' : 'transparent'
+                                animationDelay: `${index * 100}ms`
                             }}
                         >
                             <div className={`absolute inset-0 bg-gradient-to-br ${stat.bgGradient} dark:bg-gradient-to-br dark:${stat.darkBg} opacity-50`}></div>
@@ -425,6 +435,12 @@ export const OfficerDashboard: React.FC = () => {
                     </div>
                 </div>
             )}
+
+            <HelpModal
+                isOpen={isHelpModalOpen}
+                onClose={() => setIsHelpModalOpen(false)}
+                role="OFFICER"
+            />
         </div>
     );
 };

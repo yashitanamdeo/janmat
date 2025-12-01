@@ -4,6 +4,9 @@ import type { RootState } from '../store/store';
 import { fetchComplaintsStart, fetchComplaintsSuccess, fetchComplaintsFailure } from '../store/slices/complaintSlice';
 import { CreateComplaintModal } from '../components/complaint/CreateComplaintModal';
 import { EditComplaintModal } from '../components/complaint/EditComplaintModal';
+import { FeedbackModal } from '../components/ui/FeedbackModal';
+import { FeedbackDisplay } from '../components/ui/FeedbackDisplay';
+import { HelpModal } from '../components/ui/HelpModal';
 import { logout } from '../store/slices/authSlice';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -16,6 +19,8 @@ export const Dashboard: React.FC = () => {
     const { complaints } = useSelector((state: RootState) => state.complaints);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+    const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
     const [selectedComplaint, setSelectedComplaint] = useState<any>(null);
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
@@ -116,6 +121,15 @@ export const Dashboard: React.FC = () => {
                         </div>
                         <div className="flex items-center gap-4">
                             <ThemeToggle />
+                            <button
+                                onClick={() => setIsHelpModalOpen(true)}
+                                className="p-2 rounded-xl transition-all hover:scale-105 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                title="Help & Support"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--text-secondary)' }}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </button>
                             <button
                                 onClick={() => navigate('/profile')}
                                 className="hidden md:flex items-center gap-3 px-4 py-2 rounded-xl transition-all hover:scale-105"
@@ -292,6 +306,14 @@ export const Dashboard: React.FC = () => {
                                                 {complaint.location}
                                             </span>
                                         )}
+                                        {complaint.department && (
+                                            <span className="flex items-center gap-1 px-2 py-1 rounded-md bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 text-xs font-semibold">
+                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                                </svg>
+                                                {complaint.department.name}
+                                            </span>
+                                        )}
                                         <span style={{ color: 'var(--text-tertiary)' }}>
                                             {new Date(complaint.createdAt).toLocaleDateString()}
                                         </span>
@@ -319,7 +341,7 @@ export const Dashboard: React.FC = () => {
                                         </div>
                                     </div>
 
-                                    <div className="flex justify-end">
+                                    <div className="flex justify-end gap-2">
                                         {complaint.status === 'PENDING' && (
                                             <button
                                                 onClick={() => {
@@ -335,7 +357,27 @@ export const Dashboard: React.FC = () => {
                                                 Edit
                                             </button>
                                         )}
+                                        {complaint.status === 'RESOLVED' && !complaint.feedback && (
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedComplaint(complaint);
+                                                    setIsFeedbackModalOpen(true);
+                                                }}
+                                                className="px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:scale-105 flex items-center gap-2 bg-yellow-500 text-white hover:bg-yellow-600"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                                </svg>
+                                                Rate Resolution
+                                            </button>
+                                        )}
                                     </div>
+
+                                    {complaint.feedback && (
+                                        <div className="mt-4">
+                                            <FeedbackDisplay feedback={complaint.feedback} />
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -356,6 +398,25 @@ export const Dashboard: React.FC = () => {
                 }}
                 complaint={selectedComplaint}
                 onUpdate={handleComplaintUpdate}
+            />
+
+            {selectedComplaint && (
+                <FeedbackModal
+                    isOpen={isFeedbackModalOpen}
+                    onClose={() => {
+                        setIsFeedbackModalOpen(false);
+                        setSelectedComplaint(null);
+                    }}
+                    complaintId={selectedComplaint.id}
+                    complaintTitle={selectedComplaint.title}
+                    existingFeedback={selectedComplaint.feedback}
+                />
+            )}
+
+            <HelpModal
+                isOpen={isHelpModalOpen}
+                onClose={() => setIsHelpModalOpen(false)}
+                role="CITIZEN"
             />
         </div >
     );

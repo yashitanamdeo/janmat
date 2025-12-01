@@ -5,6 +5,9 @@ import authRoutes from './routes/auth.routes';
 import complaintRoutes from './routes/complaint.routes';
 import adminRoutes from './routes/admin.routes';
 import notificationRoutes from './routes/notification.routes';
+import departmentRoutes from './routes/department.routes';
+import feedbackRoutes from './routes/feedback.routes';
+import analyticsRoutes from './routes/analytics.routes';
 
 import officerRoutes from './routes/officer.routes';
 
@@ -21,6 +24,9 @@ app.use('/api/complaints', complaintRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/officer', officerRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/departments', departmentRoutes);
+app.use('/api', feedbackRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 app.get('/', (req, res) => {
     res.send('Janmat API is running');

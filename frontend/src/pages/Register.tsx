@@ -4,11 +4,13 @@ import { useNavigate, Link } from 'react-router-dom';
 import { loginSuccess } from '../store/slices/authSlice';
 import axios from 'axios';
 import logo from '../assets/Janmat-logo-main.png';
+import { PasswordInput } from '../components/ui/PasswordInput';
 
 export const Register: React.FC = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
+    const [dateOfBirth, setDateOfBirth] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [agreeTerms, setAgreeTerms] = useState(false);
@@ -48,11 +50,34 @@ export const Register: React.FC = () => {
         return 'Strong';
     };
 
+    const calculateAge = (dob: string): number => {
+        const today = new Date();
+        const birthDate = new Date(dob);
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        return age;
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (password !== confirmPassword) {
             setError('Passwords do not match');
+            return;
+        }
+
+        // Age validation
+        if (!dateOfBirth) {
+            setError('Please enter your date of birth');
+            return;
+        }
+
+        const age = calculateAge(dateOfBirth);
+        if (age < 18) {
+            setError('You must be at least 18 years old to register');
             return;
         }
 
@@ -69,6 +94,7 @@ export const Register: React.FC = () => {
                 name,
                 email,
                 phone,
+                dateOfBirth,
                 password,
                 role: 'CITIZEN'
             });
@@ -190,22 +216,39 @@ export const Register: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Password Input */}
+                            {/* Date of Birth Input */}
                             <div>
-                                <label className="block text-sm font-semibold mb-2" style={{ color: '#1E293B' }}>Password</label>
+                                <label className="block text-sm font-semibold mb-2" style={{ color: '#1E293B' }}>Date of Birth</label>
                                 <div className="input-with-icon">
                                     <svg className="input-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
                                     <input
-                                        type="password"
-                                        placeholder="••••••••"
-                                        value={password}
-                                        onChange={(e) => handlePasswordChange(e.target.value)}
+                                        type="date"
+                                        value={dateOfBirth}
+                                        onChange={(e) => setDateOfBirth(e.target.value)}
                                         className="modern-input"
+                                        max={new Date().toISOString().split('T')[0]}
                                         required
                                     />
                                 </div>
+                                {dateOfBirth && calculateAge(dateOfBirth) < 18 && (
+                                    <p className="text-xs text-red-600 mt-1">
+                                        You must be at least 18 years old to register
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Password Input */}
+                            <div>
+                                <PasswordInput
+                                    value={password}
+                                    onChange={(e) => handlePasswordChange(e.target.value)}
+                                    placeholder="••••••••"
+                                    label="Password"
+                                    required
+                                    autoComplete="new-password"
+                                />
                                 {/* Password Strength Indicator */}
                                 {password && (
                                     <div className="mt-2">
@@ -228,22 +271,15 @@ export const Register: React.FC = () => {
                             </div>
 
                             {/* Confirm Password Input */}
-                            <div>
-                                <label className="block text-sm font-semibold mb-2" style={{ color: '#1E293B' }}>Confirm Password</label>
-                                <div className="input-with-icon">
-                                    <svg className="input-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    <input
-                                        type="password"
-                                        placeholder="••••••••"
-                                        value={confirmPassword}
-                                        onChange={(e) => setConfirmPassword(e.target.value)}
-                                        className="modern-input"
-                                        required
-                                    />
-                                </div>
-                            </div>
+                            <PasswordInput
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                placeholder="••••••••"
+                                label="Confirm Password"
+                                required
+                                autoComplete="new-password"
+                                name="confirmPassword"
+                            />
 
                             {/* Terms & Conditions */}
                             <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 transition-colors">

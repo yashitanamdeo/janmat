@@ -7,6 +7,9 @@ import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { OfficerDashboard } from './pages/OfficerDashboard';
+import { DepartmentManagement } from './pages/DepartmentManagement';
+import { OfficerManagement } from './pages/OfficerManagement';
+import { FeedbackDashboard } from './pages/FeedbackDashboard';
 import { Profile } from './pages/Profile';
 import { loginSuccess } from './store/slices/authSlice';
 import axios from 'axios';
@@ -43,6 +46,9 @@ const AppContent: React.FC = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/departments" element={<DepartmentManagement />} />
+        <Route path="/admin/officers" element={<OfficerManagement />} />
+        <Route path="/admin/feedback" element={<FeedbackDashboard />} />
         <Route path="/officer" element={<OfficerDashboard />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/" element={<Navigate to="/login" replace />} />

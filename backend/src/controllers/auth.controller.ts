@@ -8,6 +8,7 @@ const registerSchema = z.object({
     email: z.string().email(),
     phone: z.string().min(10),
     password: z.string().min(6),
+    dateOfBirth: z.string().optional(),
 });
 
 const loginSchema = z.object({
@@ -22,8 +23,8 @@ const verifySchema = z.object({
 
 export class AuthController {
     static register = catchAsync(async (req: Request, res: Response) => {
-        const { name, email, phone, password } = registerSchema.parse(req.body);
-        const result = await AuthService.register(email, phone, password, name);
+        const { name, email, phone, password, dateOfBirth } = registerSchema.parse(req.body);
+        const result = await AuthService.register(email, phone, password, name, dateOfBirth);
         res.status(201).json(result);
     });
 

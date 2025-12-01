@@ -14,4 +14,10 @@ router.post('/complaints/:id/assign', AdminController.assignComplaint);
 router.post('/assign-complaint', AdminController.assignComplaintAlt); // Alternative endpoint
 router.get('/reports', AdminController.downloadReport);
 
+// New routes for enhanced functionality
+router.get('/feedback', AdminController.getAllFeedback);
+router.patch('/officers/:officerId/department', AdminController.updateOfficerDepartment);
+router.patch('/complaints/:id/department', AdminController.updateComplaintDepartment);
+
 export default router;
+

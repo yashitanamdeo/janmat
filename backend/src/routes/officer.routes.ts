@@ -7,6 +7,6 @@ const router = express.Router();
 router.use(protect, authorize('OFFICER', 'ADMIN'));
 
 router.get('/assigned-complaints', OfficerController.getAssignedComplaints);
-router.patch('/update-status/:id', OfficerController.updateComplaintStatus);
+router.patch('/complaints/:id/status', OfficerController.updateComplaintStatus);
 
 export default router;
