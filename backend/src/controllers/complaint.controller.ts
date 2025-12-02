@@ -10,6 +10,9 @@ const createComplaintSchema = z.object({
     description: z.string().min(10),
     urgency: z.enum(['LOW', 'MEDIUM', 'HIGH']),
     location: z.string().optional(),
+    latitude: z.string().optional().transform(val => val ? parseFloat(val) : undefined),
+    longitude: z.string().optional().transform(val => val ? parseFloat(val) : undefined),
+    departmentId: z.string().optional(),
 });
 
 const updateStatusSchema = z.object({

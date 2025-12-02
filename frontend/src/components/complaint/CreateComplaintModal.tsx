@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { addComplaint } from '../../store/slices/complaintSlice';
-import { MapComponent } from '../ui/MapComponent';
+import { LocationPicker } from '../common/LocationPicker';
 import axios from 'axios';
 
 interface CreateComplaintModalProps {
@@ -44,6 +44,10 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({ isOp
         { value: 'HIGH', label: 'High' },
     ];
 
+    const [locationData, setLocationData] = useState<{ address: string; lat: number; lng: number } | null>(null);
+
+    // ... existing useEffect ...
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -53,7 +57,11 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({ isOp
             formData.append('title', title);
             formData.append('description', description);
             formData.append('urgency', urgency);
-            formData.append('location', location);
+            formData.append('location', locationData ? locationData.address : location);
+            if (locationData) {
+                formData.append('latitude', locationData.lat.toString());
+                formData.append('longitude', locationData.lng.toString());
+            }
             if (departmentId) {
                 formData.append('departmentId', departmentId);
             }
@@ -81,8 +89,8 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({ isOp
             setTitle('');
             setDescription('');
             setUrgency('LOW');
-            setUrgency('LOW');
             setLocation('');
+            setLocationData(null);
             setDepartmentId('');
             setFiles(null);
         } catch (error) {
@@ -96,7 +104,7 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({ isOp
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fade-in" onClick={onClose}>
-            <div className="modern-card max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="modern-card max-w-2xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar" onClick={(e) => e.stopPropagation()}>
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-bold" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                         New Complaint
@@ -109,6 +117,7 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({ isOp
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* ... Title and Description fields ... */}
                     <div>
                         <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Title</label>
                         <input
@@ -164,18 +173,17 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({ isOp
                                 ))}
                             </select>
                         </div>
+                    </div>
 
-                        <div>
-                            <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Location</label>
-                            <input
-                                type="text"
-                                value={location}
-                                onChange={(e) => setLocation(e.target.value)}
-                                className="modern-input"
-                                placeholder="Address or landmark"
-                                required
-                            />
-                        </div>
+                    {/* Location Picker Section */}
+                    <div>
+                        <LocationPicker
+                            onLocationSelect={(loc: { address: string; lat: number; lng: number }) => {
+                                setLocationData(loc);
+                                setLocation(loc.address);
+                            }}
+                            initialLocation={locationData ? locationData : undefined}
+                        />
                     </div>
 
                     <div>
@@ -208,16 +216,7 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({ isOp
                         </div>
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Location on Map</label>
-                        <div className="h-64 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
-                            <MapComponent
-                                onLocationSelect={(lat, lng) => {
-                                    setLocation(`${lat.toFixed(6)}, ${lng.toFixed(6)}`);
-                                }}
-                            />
-                        </div>
-                    </div>
+
 
                     <div className="flex gap-4 pt-4 border-t" style={{ borderColor: 'var(--border-color)' }}>
                         <button

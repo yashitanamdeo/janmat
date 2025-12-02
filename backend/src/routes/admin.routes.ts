@@ -23,6 +23,7 @@ router.get('/officers', AdminController.getOfficers);
 router.patch('/officers/:officerId/department', AdminController.updateOfficerDepartment);
 
 // Reports
+router.get('/reports/weekly', AdminController.getWeeklyReport);
 router.get('/reports', AdminController.downloadReport);
 
 // Feedback

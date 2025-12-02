@@ -67,6 +67,8 @@ model Complaint {
   urgency     Urgency  @default(LOW)
   status      Status   @default(PENDING)
   location    String?  // JSON string or address
+  latitude    Float?   // Location coordinates
+  longitude   Float?   // Location coordinates
   userId      String
   user        User     @relation(fields: [userId], references: [id])
   assignedTo  String?

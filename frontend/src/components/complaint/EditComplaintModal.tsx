@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { updateComplaint } from '../../store/slices/complaintSlice';
-import { MapComponent } from '../ui/MapComponent';
+import { LocationPicker } from '../common/LocationPicker';
 import axios from 'axios';
 
 interface Complaint {
@@ -10,6 +10,8 @@ interface Complaint {
     description: string;
     urgency: string;
     location?: string;
+    latitude?: number;
+    longitude?: number;
     status: string;
 }
 
@@ -26,6 +28,7 @@ export const EditComplaintModal: React.FC<EditComplaintModalProps> = ({ isOpen, 
     const [description, setDescription] = useState('');
     const [urgency, setUrgency] = useState('LOW');
     const [location, setLocation] = useState('');
+    const [locationData, setLocationData] = useState<{ address: string; lat: number; lng: number } | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -35,6 +38,15 @@ export const EditComplaintModal: React.FC<EditComplaintModalProps> = ({ isOpen, 
             setDescription(complaint.description);
             setUrgency(complaint.urgency);
             setLocation(complaint.location || '');
+            if (complaint.latitude && complaint.longitude) {
+                setLocationData({
+                    address: complaint.location || '',
+                    lat: complaint.latitude,
+                    lng: complaint.longitude
+                });
+            } else {
+                setLocationData(null);
+            }
         }
     }, [complaint]);
 
@@ -59,7 +71,9 @@ export const EditComplaintModal: React.FC<EditComplaintModalProps> = ({ isOpen, 
                     title,
                     description,
                     urgency,
-                    location
+                    location: locationData ? locationData.address : location,
+                    latitude: locationData?.lat,
+                    longitude: locationData?.lng
                 },
                 {
                     headers: {
@@ -132,28 +146,17 @@ export const EditComplaintModal: React.FC<EditComplaintModalProps> = ({ isOpen, 
                                 ))}
                             </select>
                         </div>
-
-                        <div>
-                            <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Location</label>
-                            <input
-                                type="text"
-                                value={location}
-                                onChange={(e) => setLocation(e.target.value)}
-                                className="modern-input"
-                            />
-                        </div>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Location on Map</label>
-                        <div className="h-64 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
-                            <MapComponent
-                                isMarkerDraggable={true}
-                                onLocationSelect={(loc) => {
-                                    setLocation(`${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)}`);
-                                }}
-                            />
-                        </div>
+                        <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Location</label>
+                        <LocationPicker
+                            onLocationSelect={(loc: { address: string; lat: number; lng: number }) => {
+                                setLocationData(loc);
+                                setLocation(loc.address);
+                            }}
+                            initialLocation={locationData ? locationData : undefined}
+                        />
                     </div>
 
                     {error && (

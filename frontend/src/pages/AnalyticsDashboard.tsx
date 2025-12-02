@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { OfficersListModal } from '../components/analytics/OfficersListModal';
+import { DepartmentComplaintsModal } from '../components/analytics/DepartmentComplaintsModal';
+import { ComplaintDetailsModal } from '../components/complaint/ComplaintDetailsModal';
 
 interface DepartmentStats {
     departmentId: string;
@@ -13,18 +16,16 @@ interface DepartmentStats {
     activeOfficers: number;
 }
 
-interface TrendData {
-    date: string;
-    complaints: number;
-    resolved: number;
-}
-
 export const AnalyticsDashboard: React.FC = () => {
     const navigate = useNavigate();
     const [departmentStats, setDepartmentStats] = useState<DepartmentStats[]>([]);
-    const [trends, setTrends] = useState<TrendData[]>([]);
     const [loading, setLoading] = useState(true);
     const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d');
+
+    // Modal states
+    const [officersModal, setOfficersModal] = useState<{ isOpen: boolean; deptId: string; deptName: string }>({ isOpen: false, deptId: '', deptName: '' });
+    const [complaintsModal, setComplaintsModal] = useState<{ isOpen: boolean; deptId: string; deptName: string }>({ isOpen: false, deptId: '', deptName: '' });
+    const [viewComplaint, setViewComplaint] = useState<any>(null);
 
     useEffect(() => {
         loadAnalytics();
@@ -41,13 +42,6 @@ export const AnalyticsDashboard: React.FC = () => {
                 params: { timeRange }
             });
             setDepartmentStats(deptResponse.data);
-
-            // Fetch trends
-            const trendsResponse = await axios.get('http://localhost:3000/api/analytics/trends', {
-                headers: { Authorization: `Bearer ${token}` },
-                params: { timeRange }
-            });
-            setTrends(trendsResponse.data);
         } catch (error) {
             console.error('Failed to load analytics:', error);
         } finally {
@@ -223,12 +217,21 @@ export const AnalyticsDashboard: React.FC = () => {
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4 text-center">
-                                                        <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                                                        <button
+                                                            onClick={() => setOfficersModal({ isOpen: true, deptId: dept.departmentId, deptName: dept.departmentName })}
+                                                            className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-800/50 transition-all cursor-pointer hover:scale-110"
+                                                        >
                                                             {dept.activeOfficers}
-                                                        </span>
+                                                        </button>
                                                     </td>
-                                                    <td className="px-6 py-4 text-center font-semibold" style={{ color: 'var(--text-primary)' }}>
-                                                        {dept.totalComplaints}
+                                                    <td className="px-6 py-4 text-center">
+                                                        <button
+                                                            onClick={() => setComplaintsModal({ isOpen: true, deptId: dept.departmentId, deptName: dept.departmentName })}
+                                                            className="font-semibold hover:underline cursor-pointer transition-all hover:scale-110"
+                                                            style={{ color: 'var(--primary)' }}
+                                                        >
+                                                            {dept.totalComplaints}
+                                                        </button>
                                                     </td>
                                                     <td className="px-6 py-4 text-center">
                                                         <span className="text-green-600 dark:text-green-400 font-semibold">
@@ -268,6 +271,31 @@ export const AnalyticsDashboard: React.FC = () => {
                     </>
                 )}
             </main>
+
+            {/* Modals */}
+            <OfficersListModal
+                isOpen={officersModal.isOpen}
+                onClose={() => setOfficersModal({ isOpen: false, deptId: '', deptName: '' })}
+                departmentId={officersModal.deptId}
+                departmentName={officersModal.deptName}
+            />
+
+            <DepartmentComplaintsModal
+                isOpen={complaintsModal.isOpen}
+                onClose={() => setComplaintsModal({ isOpen: false, deptId: '', deptName: '' })}
+                departmentId={complaintsModal.deptId}
+                departmentName={complaintsModal.deptName}
+                onComplaintClick={(complaint) => {
+                    setViewComplaint(complaint);
+                    setComplaintsModal({ isOpen: false, deptId: '', deptName: '' });
+                }}
+            />
+
+            <ComplaintDetailsModal
+                isOpen={!!viewComplaint}
+                onClose={() => setViewComplaint(null)}
+                complaint={viewComplaint}
+            />
         </div>
     );
 };

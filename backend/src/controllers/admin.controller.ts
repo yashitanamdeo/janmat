@@ -38,6 +38,8 @@ export class AdminController {
                         email: true,
                     },
                 },
+                attachments: true,
+                department: true,
             },
             orderBy: {
                 createdAt: 'desc',
@@ -433,5 +435,67 @@ export class AdminController {
         });
 
         res.json(complaints);
+    });
+    static getWeeklyReport = catchAsync(async (req: Request, res: Response) => {
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+        const complaints = await prisma.complaint.findMany({
+            where: {
+                createdAt: {
+                    gte: oneWeekAgo
+                }
+            },
+            include: {
+                user: true,
+                assignedOfficer: true,
+                department: true
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
+
+        const PDFDocument = require('pdfkit');
+        const doc = new PDFDocument({ margin: 50 });
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=weekly-report-${new Date().toISOString().split('T')[0]}.pdf`);
+
+        doc.pipe(res);
+
+        // Header
+        doc.fontSize(24).text('JanMat Weekly Report', { align: 'center' });
+        doc.fontSize(12).text(`Period: ${oneWeekAgo.toLocaleDateString()} - ${new Date().toLocaleDateString()}`, { align: 'center' });
+        doc.moveDown();
+
+        // Stats
+        const total = complaints.length;
+        const resolved = complaints.filter(c => c.status === 'RESOLVED').length;
+        const pending = complaints.filter(c => c.status === 'PENDING').length;
+        const highUrgency = complaints.filter(c => c.urgency === 'HIGH').length;
+
+        doc.fontSize(16).text('Weekly Statistics', { underline: true });
+        doc.moveDown(0.5);
+        doc.fontSize(12);
+        doc.text(`Total New Complaints: ${total}`);
+        doc.text(`Resolved This Week: ${resolved}`);
+        doc.text(`Pending: ${pending}`);
+        doc.text(`High Urgency Cases: ${highUrgency}`);
+        doc.moveDown();
+
+        // List
+        doc.fontSize(16).text('Complaint Details', { underline: true });
+        doc.moveDown(0.5);
+
+        complaints.forEach((c, i) => {
+            if (i > 0) doc.moveDown(0.5);
+            doc.fontSize(12).fillColor('black').text(`${i + 1}. ${c.title}`);
+            doc.fontSize(10).fillColor('gray').text(`   Status: ${c.status} | Dept: ${c.department?.name || 'N/A'}`);
+            doc.text(`   Date: ${new Date(c.createdAt).toLocaleDateString()}`);
+            if (doc.y > 700) doc.addPage();
+        });
+
+        doc.end();
     });
 }

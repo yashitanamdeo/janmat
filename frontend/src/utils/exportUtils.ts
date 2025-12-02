@@ -52,7 +52,7 @@ export const exportToPDF = async (data: any[], filename: string, title: string) 
         <!DOCTYPE html>
         <html>
         <head>
-            <title>${title}</title>
+            <title>${filename} - ${title}</title>
             <style>
                 body {
                     font-family: Arial, sans-serif;

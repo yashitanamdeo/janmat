@@ -7,7 +7,7 @@ import { CategorizationService } from './categorization.service';
 
 export class ComplaintService {
     static async createComplaint(userId: string, data: any, files: Express.Multer.File[]) {
-        let { title, description, urgency, location, category } = data;
+        let { title, description, urgency, location, category, latitude, longitude, departmentId } = data;
 
         if (!category) {
             category = CategorizationService.predictCategory(`${title} ${description}`);
@@ -20,6 +20,9 @@ export class ComplaintService {
                 category,
                 urgency: urgency as Urgency,
                 location,
+                latitude,
+                longitude,
+                departmentId,
                 userId,
                 status: Status.PENDING,
                 attachments: {
@@ -114,7 +117,8 @@ export class ComplaintService {
         // Real-time update
         try {
             const io = getIO();
-            io.to(updatedComplaint.userId).emit('complaint_updated', updatedComplaint);
+            io.to(updatedComplaint.userId).emit('statusChanged', { complaint: updatedComplaint });
+            io.to(updatedComplaint.userId).emit('complaintUpdated', { complaint: updatedComplaint });
         } catch (e) {
             console.error('Socket error:', e);
         }

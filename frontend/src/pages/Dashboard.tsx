@@ -12,6 +12,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
 import { NotificationCenter } from '../components/common/NotificationCenter';
+import { ComplaintDetailsModal } from '../components/complaint/ComplaintDetailsModal';
+import { useRealTimeUpdates } from '../hooks/useRealTimeUpdates';
 
 export const Dashboard: React.FC = () => {
     const dispatch = useDispatch();
@@ -23,7 +25,11 @@ export const Dashboard: React.FC = () => {
     const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
     const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
     const [selectedComplaint, setSelectedComplaint] = useState<any>(null);
+    const [viewComplaint, setViewComplaint] = useState<any>(null);
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
+
+    // Enable real-time updates
+    useRealTimeUpdates();
 
     useEffect(() => {
         const loadComplaints = async () => {
@@ -282,8 +288,9 @@ export const Dashboard: React.FC = () => {
                             {filteredComplaints.map((complaint: any) => (
                                 <div
                                     key={complaint.id}
-                                    className="p-5 rounded-xl transition-all hover-lift"
+                                    className="p-5 rounded-xl transition-all hover-lift cursor-pointer"
                                     style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}
+                                    onClick={() => setViewComplaint(complaint)}
                                 >
                                     <div className="flex items-start justify-between mb-3">
                                         <h4 className="text-lg font-bold flex-1" style={{ color: 'var(--text-primary)' }}>
@@ -346,7 +353,8 @@ export const Dashboard: React.FC = () => {
                                     <div className="flex justify-end gap-2">
                                         {complaint.status === 'PENDING' && (
                                             <button
-                                                onClick={() => {
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
                                                     setSelectedComplaint(complaint);
                                                     setIsEditModalOpen(true);
                                                 }}
@@ -361,7 +369,8 @@ export const Dashboard: React.FC = () => {
                                         )}
                                         {complaint.status === 'RESOLVED' && !complaint.feedback && (
                                             <button
-                                                onClick={() => {
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
                                                     setSelectedComplaint(complaint);
                                                     setIsFeedbackModalOpen(true);
                                                 }}
@@ -419,6 +428,12 @@ export const Dashboard: React.FC = () => {
                 isOpen={isHelpModalOpen}
                 onClose={() => setIsHelpModalOpen(false)}
                 role="CITIZEN"
+            />
+
+            <ComplaintDetailsModal
+                isOpen={!!viewComplaint}
+                onClose={() => setViewComplaint(null)}
+                complaint={viewComplaint}
             />
         </div>
     );
