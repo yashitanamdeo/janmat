@@ -55,6 +55,7 @@ export class AdminController {
                 name: true,
                 email: true,
                 phone: true,
+                department: true, // Include department info
             },
         });
 
@@ -65,10 +66,21 @@ export class AdminController {
         const { id } = req.params;
         const { officerId } = req.body;
 
+        // Fetch officer to get department
+        const officer = await prisma.user.findUnique({
+            where: { id: officerId },
+            select: { id: true, departmentId: true, name: true }
+        });
+
+        if (!officer) {
+            throw new Error('Officer not found');
+        }
+
         const complaint = await prisma.complaint.update({
             where: { id },
             data: {
                 assignedTo: officerId,
+                departmentId: officer.departmentId, // Auto-assign department
                 status: 'IN_PROGRESS',
             },
             include: {
@@ -82,16 +94,36 @@ export class AdminController {
             },
         });
 
+        // Send notification
+        await prisma.notification.create({
+            data: {
+                userId: officerId,
+                message: `New complaint assigned: ${complaint.title}`,
+                type: 'INFO'
+            }
+        });
+
         res.json(complaint);
     });
 
     static assignComplaintAlt = catchAsync(async (req: Request, res: Response) => {
         const { complaintId, officerId } = req.body;
 
+        // Fetch officer to get department
+        const officer = await prisma.user.findUnique({
+            where: { id: officerId },
+            select: { id: true, departmentId: true, name: true }
+        });
+
+        if (!officer) {
+            throw new Error('Officer not found');
+        }
+
         const complaint = await prisma.complaint.update({
             where: { id: complaintId },
             data: {
                 assignedTo: officerId,
+                departmentId: officer.departmentId, // Auto-assign department
                 status: 'IN_PROGRESS',
             },
             include: {
@@ -103,6 +135,15 @@ export class AdminController {
                     },
                 },
             },
+        });
+
+        // Send notification
+        await prisma.notification.create({
+            data: {
+                userId: officerId,
+                message: `New complaint assigned: ${complaint.title}`,
+                type: 'INFO'
+            }
         });
 
         res.json(complaint);
@@ -282,5 +323,115 @@ export class AdminController {
         });
 
         res.json(complaint);
+    });
+
+    // Advanced search with multiple criteria
+    static advancedSearch = catchAsync(async (req: Request, res: Response) => {
+        const {
+            keyword,
+            status,
+            urgency,
+            departmentId,
+            dateFrom,
+            dateTo,
+            assignedStatus,
+            hasFeedback
+        } = req.body;
+
+        const where: any = {};
+
+        // Keyword search
+        if (keyword) {
+            where.OR = [
+                { title: { contains: keyword, mode: 'insensitive' } },
+                { description: { contains: keyword, mode: 'insensitive' } },
+                { location: { contains: keyword, mode: 'insensitive' } }
+            ];
+        }
+
+        // Status filter
+        if (status && status.length > 0) {
+            where.status = { in: status };
+        }
+
+        // Urgency filter
+        if (urgency && urgency.length > 0) {
+            where.urgency = { in: urgency };
+        }
+
+        // Department filter
+        if (departmentId) {
+            where.departmentId = departmentId;
+        }
+
+        // Date range filter
+        if (dateFrom || dateTo) {
+            where.createdAt = {};
+            if (dateFrom) {
+                where.createdAt.gte = new Date(dateFrom);
+            }
+            if (dateTo) {
+                const endDate = new Date(dateTo);
+                endDate.setHours(23, 59, 59, 999);
+                where.createdAt.lte = endDate;
+            }
+        }
+
+        // Assignment status filter
+        if (assignedStatus === 'assigned') {
+            where.assignedTo = { not: null };
+        } else if (assignedStatus === 'unassigned') {
+            where.assignedTo = null;
+        }
+
+        // Feedback filter
+        if (hasFeedback === true) {
+            where.feedback = { isNot: null };
+        }
+
+        const complaints = await prisma.complaint.findMany({
+            where,
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+                assignedOfficer: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        department: {
+                            select: {
+                                id: true,
+                                name: true,
+                            },
+                        },
+                    },
+                },
+                department: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+                feedback: {
+                    select: {
+                        id: true,
+                        rating: true,
+                        comment: true,
+                        createdAt: true,
+                    },
+                },
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+        });
+
+        res.json(complaints);
     });
 }

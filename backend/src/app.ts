@@ -10,6 +10,7 @@ import feedbackRoutes from './routes/feedback.routes';
 import analyticsRoutes from './routes/analytics.routes';
 
 import officerRoutes from './routes/officer.routes';
+import docsRouter from './docs';
 
 dotenv.config();
 
@@ -27,6 +28,8 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/departments', departmentRoutes);
 app.use('/api', feedbackRoutes);
 app.use('/api/analytics', analyticsRoutes);
+// API documentation (OpenAPI + static UI)
+app.use('/docs', docsRouter);
 
 app.get('/', (req, res) => {
     res.send('Janmat API is running');

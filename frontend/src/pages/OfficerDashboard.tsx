@@ -6,6 +6,7 @@ import { logout } from '../store/slices/authSlice';
 import axios from 'axios';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
 import { HelpModal } from '../components/ui/HelpModal';
+import { NotificationCenter } from '../components/common/NotificationCenter';
 
 interface Complaint {
     id: string;
@@ -128,6 +129,7 @@ export const OfficerDashboard: React.FC = () => {
                         <div className="flex items-center gap-4">
                             <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg"
                                 style={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }}>
+
                                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                                 </svg>
@@ -140,6 +142,7 @@ export const OfficerDashboard: React.FC = () => {
                             </div>
                         </div>
                         <div className="flex items-center gap-4">
+                            <NotificationCenter />
                             <ThemeToggle />
                             <button
                                 onClick={() => setIsHelpModalOpen(true)}
@@ -176,12 +179,12 @@ export const OfficerDashboard: React.FC = () => {
                         </div>
                     </div>
                 </div>
-            </nav>
+            </nav >
 
             {/* Main Content */}
-            <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+            < main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8" >
                 {/* Welcome Banner */}
-                <div className="mb-8 p-8 rounded-2xl relative overflow-hidden fade-in"
+                < div className="mb-8 p-8 rounded-2xl relative overflow-hidden fade-in"
                     style={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }}>
                     <div className="absolute inset-0 opacity-10">
                         <div className="absolute -top-20 -right-20 w-40 h-40 bg-white rounded-full blur-3xl"></div>
@@ -195,50 +198,52 @@ export const OfficerDashboard: React.FC = () => {
                             Manage and resolve assigned complaints efficiently
                         </p>
                     </div>
-                </div>
+                </div >
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    {stats.map((stat, index) => (
-                        <button
-                            key={stat.name}
-                            onClick={() => setStatusFilter(stat.filter)}
-                            className={`modern-card hover-lift transition-all duration-300 text-left relative overflow-hidden ${statusFilter === stat.filter ? 'ring-4 ring-offset-2 ring-[var(--primary)]' : ''
-                                }`}
-                            style={{
-                                animationDelay: `${index * 100}ms`
-                            }}
-                        >
-                            <div className={`absolute inset-0 bg-gradient-to-br ${stat.bgGradient} dark:bg-gradient-to-br dark:${stat.darkBg} opacity-50`}></div>
-                            <div className="relative z-10">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div>
-                                        <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>
-                                            {stat.name}
-                                        </p>
-                                        <p className="text-4xl font-bold" style={{ color: 'var(--text-primary)' }}>
-                                            {stat.value}
-                                        </p>
+                < div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" >
+                    {
+                        stats.map((stat, index) => (
+                            <button
+                                key={stat.name}
+                                onClick={() => setStatusFilter(stat.filter)}
+                                className={`modern-card hover-lift transition-all duration-300 text-left relative overflow-hidden ${statusFilter === stat.filter ? 'ring-4 ring-offset-2 ring-[var(--primary)]' : ''
+                                    }`}
+                                style={{
+                                    animationDelay: `${index * 100}ms`
+                                }}
+                            >
+                                <div className={`absolute inset-0 bg-gradient-to-br ${stat.bgGradient} dark:bg-gradient-to-br dark:${stat.darkBg} opacity-50`}></div>
+                                <div className="relative z-10">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div>
+                                            <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>
+                                                {stat.name}
+                                            </p>
+                                            <p className="text-4xl font-bold" style={{ color: 'var(--text-primary)' }}>
+                                                {stat.value}
+                                            </p>
+                                        </div>
+                                        <div className={`w-16 h-16 bg-gradient-to-br ${stat.gradient} rounded-2xl flex items-center justify-center text-3xl shadow-lg`}>
+                                            {stat.icon}
+                                        </div>
                                     </div>
-                                    <div className={`w-16 h-16 bg-gradient-to-br ${stat.gradient} rounded-2xl flex items-center justify-center text-3xl shadow-lg`}>
-                                        {stat.icon}
-                                    </div>
+                                    {statusFilter === stat.filter && (
+                                        <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: 'var(--primary)' }}>
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            Active Filter
+                                        </div>
+                                    )}
                                 </div>
-                                {statusFilter === stat.filter && (
-                                    <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: 'var(--primary)' }}>
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        Active Filter
-                                    </div>
-                                )}
-                            </div>
-                        </button>
-                    ))}
-                </div>
+                            </button>
+                        ))
+                    }
+                </div >
 
                 {/* Complaints Section */}
-                <div className="modern-card">
+                < div className="modern-card" >
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                         <div>
                             <h3 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
@@ -281,166 +286,170 @@ export const OfficerDashboard: React.FC = () => {
                         </div>
                     </div>
 
-                    {loading ? (
-                        <div className="flex items-center justify-center py-16">
-                            <div className="spinner"></div>
-                        </div>
-                    ) : filteredComplaints.length === 0 ? (
-                        <div className="text-center py-16">
-                            <div className="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center"
-                                style={{ background: 'var(--bg-secondary)' }}>
-                                <svg className="w-12 h-12" style={{ color: 'var(--text-tertiary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
+                    {
+                        loading ? (
+                            <div className="flex items-center justify-center py-16">
+                                <div className="spinner"></div>
                             </div>
-                            <h4 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
-                                No complaints found
-                            </h4>
-                            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                                {statusFilter === 'ALL' ? 'No complaints assigned to you yet' : `No ${statusFilter.toLowerCase().replace('_', ' ')} complaints`}
-                            </p>
-                        </div>
-                    ) : (
-                        <div className="space-y-4">
-                            {filteredComplaints.map((complaint) => (
-                                <div
-                                    key={complaint.id}
-                                    className="p-5 rounded-xl transition-all hover-lift"
-                                    style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}
-                                >
-                                    <div className="flex items-start justify-between mb-3">
-                                        <div className="flex-1">
-                                            <h4 className="text-lg font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
-                                                {complaint.title}
-                                            </h4>
-                                            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                                                {complaint.description}
-                                            </p>
-                                        </div>
-                                        <span className={`badge badge-${complaint.status.toLowerCase().replace('_', '-')} ml-4`}>
-                                            {complaint.status}
-                                        </span>
-                                    </div>
-
-                                    <div className="flex items-center justify-between gap-4 flex-wrap mt-4">
-                                        <div className="flex items-center gap-4 text-xs">
-                                            <span className={`px-3 py-1 rounded-full font-semibold ${complaint.urgency === 'HIGH' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
-                                                complaint.urgency === 'MEDIUM' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400' :
-                                                    'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400'
-                                                }`}>
-                                                {complaint.urgency} Priority
-                                            </span>
-                                            {complaint.location && (
-                                                <span className="flex items-center gap-1" style={{ color: 'var(--text-tertiary)' }}>
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                                    </svg>
-                                                    {complaint.location}
-                                                </span>
-                                            )}
-                                            <span style={{ color: 'var(--text-tertiary)' }}>
-                                                {new Date(complaint.createdAt).toLocaleDateString()}
-                                            </span>
-                                        </div>
-
-                                        <button
-                                            onClick={() => {
-                                                setSelectedComplaint(complaint);
-                                                setNewStatus(complaint.status);
-                                            }}
-                                            disabled={updatingId === complaint.id}
-                                            className="px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:scale-105 flex items-center gap-2"
-                                            style={{ background: 'var(--primary)', color: 'white' }}
-                                        >
-                                            {updatingId === complaint.id ? (
-                                                <div className="spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }}></div>
-                                            ) : (
-                                                <>
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                                    </svg>
-                                                    Update Status
-                                                </>
-                                            )}
-                                        </button>
-                                    </div>
+                        ) : filteredComplaints.length === 0 ? (
+                            <div className="text-center py-16">
+                                <div className="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center"
+                                    style={{ background: 'var(--bg-secondary)' }}>
+                                    <svg className="w-12 h-12" style={{ color: 'var(--text-tertiary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
                                 </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </main>
+                                <h4 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
+                                    No complaints found
+                                </h4>
+                                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                                    {statusFilter === 'ALL' ? 'No complaints assigned to you yet' : `No ${statusFilter.toLowerCase().replace('_', ' ')} complaints`}
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {filteredComplaints.map((complaint) => (
+                                    <div
+                                        key={complaint.id}
+                                        className="p-5 rounded-xl transition-all hover-lift"
+                                        style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}
+                                    >
+                                        <div className="flex items-start justify-between mb-3">
+                                            <div className="flex-1">
+                                                <h4 className="text-lg font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
+                                                    {complaint.title}
+                                                </h4>
+                                                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                                                    {complaint.description}
+                                                </p>
+                                            </div>
+                                            <span className={`badge badge-${complaint.status.toLowerCase().replace('_', '-')} ml-4`}>
+                                                {complaint.status}
+                                            </span>
+                                        </div>
+
+                                        <div className="flex items-center justify-between gap-4 flex-wrap mt-4">
+                                            <div className="flex items-center gap-4 text-xs">
+                                                <span className={`px-3 py-1 rounded-full font-semibold ${complaint.urgency === 'HIGH' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
+                                                    complaint.urgency === 'MEDIUM' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400' :
+                                                        'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400'
+                                                    }`}>
+                                                    {complaint.urgency} Priority
+                                                </span>
+                                                {complaint.location && (
+                                                    <span className="flex items-center gap-1" style={{ color: 'var(--text-tertiary)' }}>
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                        </svg>
+                                                        {complaint.location}
+                                                    </span>
+                                                )}
+                                                <span style={{ color: 'var(--text-tertiary)' }}>
+                                                    {new Date(complaint.createdAt).toLocaleDateString()}
+                                                </span>
+                                            </div>
+
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedComplaint(complaint);
+                                                    setNewStatus(complaint.status);
+                                                }}
+                                                disabled={updatingId === complaint.id}
+                                                className="px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:scale-105 flex items-center gap-2"
+                                                style={{ background: 'var(--primary)', color: 'white' }}
+                                            >
+                                                {updatingId === complaint.id ? (
+                                                    <div className="spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }}></div>
+                                                ) : (
+                                                    <>
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                        </svg>
+                                                        Update Status
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )
+                    }
+                </div >
+            </main >
 
             {/* Status Update Modal */}
-            {selectedComplaint && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onClick={() => setSelectedComplaint(null)}>
-                    <div className="modern-card max-w-md w-full" onClick={(e) => e.stopPropagation()}>
-                        <h3 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
-                            Update Complaint Status
-                        </h3>
-                        <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-                            {selectedComplaint.title}
-                        </p>
+            {
+                selectedComplaint && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onClick={() => setSelectedComplaint(null)}>
+                        <div className="modern-card max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+                            <h3 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
+                                Update Complaint Status
+                            </h3>
+                            <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
+                                {selectedComplaint.title}
+                            </p>
 
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
-                                    New Status
-                                </label>
-                                <select
-                                    value={newStatus}
-                                    onChange={(e) => setNewStatus(e.target.value)}
-                                    className="modern-input"
-                                    style={{ paddingLeft: '16px' }}
-                                >
-                                    <option value="PENDING">Pending</option>
-                                    <option value="IN_PROGRESS">In Progress</option>
-                                    <option value="RESOLVED">Resolved</option>
-                                    <option value="REJECTED">Rejected</option>
-                                </select>
-                            </div>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
+                                        New Status
+                                    </label>
+                                    <select
+                                        value={newStatus}
+                                        onChange={(e) => setNewStatus(e.target.value)}
+                                        className="modern-input"
+                                        style={{ paddingLeft: '16px' }}
+                                    >
+                                        <option value="PENDING">Pending</option>
+                                        <option value="IN_PROGRESS">In Progress</option>
+                                        <option value="RESOLVED">Resolved</option>
+                                        <option value="REJECTED">Rejected</option>
+                                    </select>
+                                </div>
 
-                            <div>
-                                <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
-                                    Comment (Optional)
-                                </label>
-                                <textarea
-                                    value={comment}
-                                    onChange={(e) => setComment(e.target.value)}
-                                    placeholder="Add a comment about this status update..."
-                                    className="modern-input"
-                                    style={{ paddingLeft: '16px', minHeight: '100px' }}
-                                    rows={4}
-                                />
-                            </div>
+                                <div>
+                                    <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
+                                        Comment (Optional)
+                                    </label>
+                                    <textarea
+                                        value={comment}
+                                        onChange={(e) => setComment(e.target.value)}
+                                        placeholder="Add a comment about this status update..."
+                                        className="modern-input"
+                                        style={{ paddingLeft: '16px', minHeight: '100px' }}
+                                        rows={4}
+                                    />
+                                </div>
 
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={() => setSelectedComplaint(null)}
-                                    className="flex-1 px-4 py-2 rounded-xl font-semibold transition-all hover:scale-105"
-                                    style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={() => handleStatusUpdate(selectedComplaint.id, newStatus, comment)}
-                                    disabled={updatingId === selectedComplaint.id}
-                                    className="flex-1 px-4 py-2 rounded-xl font-semibold text-white transition-all hover:scale-105"
-                                    style={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }}
-                                >
-                                    {updatingId === selectedComplaint.id ? 'Updating...' : 'Update'}
-                                </button>
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => setSelectedComplaint(null)}
+                                        className="flex-1 px-4 py-2 rounded-xl font-semibold transition-all hover:scale-105"
+                                        style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={() => handleStatusUpdate(selectedComplaint.id, newStatus, comment)}
+                                        disabled={updatingId === selectedComplaint.id}
+                                        className="flex-1 px-4 py-2 rounded-xl font-semibold text-white transition-all hover:scale-105"
+                                        style={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }}
+                                    >
+                                        {updatingId === selectedComplaint.id ? 'Updating...' : 'Update'}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             <HelpModal
                 isOpen={isHelpModalOpen}
                 onClose={() => setIsHelpModalOpen(false)}
                 role="OFFICER"
             />
-        </div>
+        </div >
     );
 };

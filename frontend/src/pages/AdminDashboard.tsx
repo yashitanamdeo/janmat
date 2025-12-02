@@ -10,6 +10,11 @@ import { ThemeToggle } from '../components/ui/ThemeToggle';
 import { TrendsChart } from '../components/analytics/TrendsChart';
 import { PerformanceChart } from '../components/analytics/PerformanceChart';
 import { HelpModal } from '../components/ui/HelpModal';
+import { NotificationCenter } from '../components/common/NotificationCenter';
+import { QuickActionsPanel } from '../components/admin/QuickActionsPanel';
+import { AdvancedSearch } from '../components/admin/AdvancedSearch';
+
+
 
 export const AdminDashboard: React.FC = () => {
     const dispatch = useDispatch();
@@ -23,6 +28,7 @@ export const AdminDashboard: React.FC = () => {
     const [performanceData, setPerformanceData] = useState([]);
     const [showAnalytics, setShowAnalytics] = useState(false);
     const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+    const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -80,6 +86,11 @@ export const AdminDashboard: React.FC = () => {
     const handleAssignClick = (complaintId: string, complaintTitle: string) => {
         setSelectedComplaintId(complaintId);
         setSelectedComplaintTitle(complaintTitle);
+    };
+
+    const handleSearchResults = (results: any[]) => {
+        dispatch(fetchComplaintsSuccess(results));
+        setShowAdvancedSearch(false);
     };
 
     const filteredComplaints = statusFilter === 'ALL'
@@ -148,6 +159,7 @@ export const AdminDashboard: React.FC = () => {
                             </div>
                         </div>
                         <div className="flex items-center gap-4">
+                            <NotificationCenter />
                             <ThemeToggle />
                             <button
                                 onClick={() => setIsHelpModalOpen(true)}
@@ -260,13 +272,31 @@ export const AdminDashboard: React.FC = () => {
                                 Feedback
                             </button>
                             <button
+                                onClick={() => navigate('/admin/analytics')}
+                                className="px-4 py-2 rounded-xl font-semibold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 transition-all hover:scale-105 flex items-center gap-2 shadow-lg"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                                Analytics
+                            </button>
+                            <button
+                                onClick={() => setShowAdvancedSearch(true)}
+                                className="px-4 py-2 rounded-xl font-semibold text-white bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 transition-all hover:scale-105 flex items-center gap-2 shadow-lg"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                Advanced Search
+                            </button>
+                            <button
                                 onClick={() => setShowAnalytics(!showAnalytics)}
                                 className={`px-4 py-2 rounded-xl font-semibold transition-all hover:scale-105 flex items-center gap-2 shadow-lg ${showAnalytics ? 'bg-blue-600 text-white' : 'bg-white text-blue-600'}`}
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                 </svg>
-                                {showAnalytics ? 'Hide Analytics' : 'Show Analytics'}
+                                {showAnalytics ? 'Hide Charts' : 'Show Charts'}
                             </button>
                         </div>
                     </div>
@@ -433,6 +463,15 @@ export const AdminDashboard: React.FC = () => {
                 onClose={() => setIsHelpModalOpen(false)}
                 role="ADMIN"
             />
+
+            {showAdvancedSearch && (
+                <AdvancedSearch
+                    onSearch={handleSearchResults}
+                    onClose={() => setShowAdvancedSearch(false)}
+                />
+            )}
+
+            <QuickActionsPanel onActionComplete={loadData} />
         </div>
     );
 };

@@ -1,21 +1,42 @@
 import { Request, Response } from 'express';
-import { NotificationService } from '../services/notification.service';
+import prisma from '../config/db';
 import catchAsync from '../utils/catchAsync';
 
 export class NotificationController {
-    static getNotifications = catchAsync(async (req: Request, res: Response) => {
-        const notifications = await NotificationService.getUserNotifications((req as any).user.id);
-        res.json({ status: 'success', data: notifications });
+    static getMyNotifications = catchAsync(async (req: Request, res: Response) => {
+        const userId = (req as any).user.id;
+
+        const notifications = await prisma.notification.findMany({
+            where: { userId },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        res.json(notifications);
     });
 
     static markAsRead = catchAsync(async (req: Request, res: Response) => {
         const { id } = req.params;
-        await NotificationService.markAsRead(id);
-        res.json({ status: 'success', message: 'Notification marked as read' });
+        const userId = (req as any).user.id;
+
+        const notification = await prisma.notification.updateMany({
+            where: {
+                id,
+                userId
+            },
+            data: { read: true }
+        });
+
+        res.json(notification);
     });
 
     static markAllAsRead = catchAsync(async (req: Request, res: Response) => {
-        await NotificationService.markAllAsRead((req as any).user.id);
-        res.json({ status: 'success', message: 'All notifications marked as read' });
+        const userId = (req as any).user.id;
+
+        await prisma.notification.updateMany({
+            where: { userId, read: false },
+            data: { read: true }
+        });
+
+        res.json({ success: true });
     });
 }

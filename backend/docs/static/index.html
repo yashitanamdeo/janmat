@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>JanMat API Documentation</title>
+    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@4/swagger-ui.css" />
+    <style>
+      body { margin:0; }
+      .curl-btn { margin-left: 8px; padding: 4px 8px; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <div id="swagger-ui"></div>
+
+    <script src="https://unpkg.com/swagger-ui-dist@4/swagger-ui-bundle.js"></script>
+    <script src="https://unpkg.com/swagger-ui-dist@4/swagger-ui-standalone-preset.js"></script>
+    <script>
+      // Initialize Swagger UI with our OpenAPI JSON endpoint
+      window.onload = function() {
+        const ui = SwaggerUIBundle({
+          url: '/docs/openapi.json',
+          dom_id: '#swagger-ui',
+          deepLinking: true,
+          presets: [
+            SwaggerUIBundle.presets.apis,
+            SwaggerUIStandalonePreset
+          ],
+          layout: 'BaseLayout',
+        });
+
+        // After a short delay, inject 'Copy as cURL' buttons into each operation block.
+        // This enhanced version reads the loaded OpenAPI JSON to build accurate
+        // cURL commands including query params, header examples and request bodies
+        let openapiSpec = null;
+        async function loadOpenApi() {
+          if (openapiSpec) return openapiSpec;
+          try {
+            const res = await fetch('/docs/openapi.json');
+            openapiSpec = await res.json();
+            return openapiSpec;
+          } catch (e) {
+            console.error('Failed to load openapi.json', e);
+            return null;
+          }
+        }
+
+        function sampleFromSchema(schema) {
+          if (!schema) return null;
+          if (schema.example !== undefined) return schema.example;
+          if (schema.type === 'string') return schema.enum ? schema.enum[0] || 'string' : 'string';
+          if (schema.type === 'integer' || schema.type === 'number') return 0;
+          if (schema.type === 'boolean') return true;
+          if (schema.type === 'array') {
+            const item = sampleFromSchema(schema.items || {});
+            return item !== null ? [item] : [];
+          }
+          if (schema.type === 'object' || schema.properties) {
+            const obj = {};
+            const props = schema.properties || {};
+            Object.keys(props).forEach(k => {
+              obj[k] = sampleFromSchema(props[k]);
+            });
+            return obj;
+          }
+          // fallback
+          return null;
+        }
+
+        function encodeQuery(params) {
+          return Object.keys(params).map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k])).join('&');
+        }
+
+        async function addCurlButtons() {
+          const spec = await loadOpenApi();
+          const opBlocks = document.querySelectorAll('.opblock-summary-control');
+          opBlocks.forEach(block => {
+            if (block.querySelector('.curl-btn')) return; // already added
+
+            const btn = document.createElement('button');
+            btn.className = 'curl-btn';
+            btn.title = 'Copy example as curl';
+            btn.innerText = 'Copy cURL';
+
+            btn.addEventListener('click', async () => {
+              try {
+                const op = block.closest('.opblock');
+                if (!op) return;
+                const method = (op.getAttribute('data-path-method') || (op.querySelector('.opblock-summary-method')?.textContent || '')).trim().toLowerCase();
+                const pathText = op.querySelector('.opblock-summary-path')?.textContent?.trim() || '';
+
+                const base = window.location.origin.replace(/\/$/, '');
+                let apiPath = pathText; // should match keys in openapi spec
+
+                // Try to find matching path in spec (keys are identical in most cases)
+                const paths = spec && spec.paths ? spec.paths : {};
+                const operation = (paths[apiPath] && paths[apiPath][method]) || null;
+
+                // If operation not found, try normalize path keys (e.g., with path parameters)
+                if (!operation) {
+                  // Try to find by simple name matching (ignoring curly braces spacing)
+                  const normalized = Object.keys(paths).find(p => p.replace(/\s+/g,'') === apiPath.replace(/\s+/g,''));
+                  if (normalized) {
+                    apiPath = normalized;
+                    operation = paths[apiPath] && paths[apiPath][method];
+                  }
+                }
+
+                let url = base + '/api' + apiPath;
+                let headers = { 'Accept': 'application/json' };
+                let body = null;
+
+                if (operation) {
+                  // path params - replace placeholders with examples/defaults or :id
+                  const params = operation.parameters || [];
+                  // handle path params
+                  const pathParams = params.filter(p => p.in === 'path');
+                  pathParams.forEach(p => {
+                    const name = p.name;
+                    const val = p.example ?? p.schema?.example ?? p.schema?.default ?? (`${name.toUpperCase()}`);
+                    url = url.replace(`{${name}}`, encodeURIComponent(val));
+                  });
+
+                  // query params
+                  const queryParams = params.filter(p => p.in === 'query');
+                  if (queryParams.length) {
+                    const q = {};
+                    queryParams.forEach(p => {
+                      q[p.name] = p.example ?? p.schema?.example ?? p.schema?.default ?? (p.schema?.enum ? p.schema.enum[0] : '');
+                    });
+                    const qs = encodeQuery(q);
+                    if (qs) url += (url.includes('?') ? '&' : '?') + qs;
+                  }
+
+                  // header params
+                  const headerParams = params.filter(p => p.in === 'header');
+                  headerParams.forEach(p => {
+                    headers[p.name] = p.example ?? p.schema?.example ?? p.schema?.default ?? '';
+                  });
+
+                  // security -> add Authorization placeholder for bearer
+                  const hasSecurity = (operation.security && operation.security.length) || (spec.security && spec.security.length);
+                  if (hasSecurity) {
+                    // naive: add bearer placeholder if bearerAuth is defined in components
+                    const schemes = spec.components && spec.components.securitySchemes;
+                    if (schemes && schemes.bearerAuth) {
+                      headers['Authorization'] = 'Bearer <TOKEN>';
+                    }
+                  }
+
+                  // requestBody
+                  if (operation.requestBody && operation.requestBody.content) {
+                    const content = operation.requestBody.content['application/json'] || operation.requestBody.content[Object.keys(operation.requestBody.content)[0]];
+                    if (content) {
+                      headers['Content-Type'] = 'application/json';
+                      // prefer examples
+                      if (content.examples) {
+                        const exKey = Object.keys(content.examples)[0];
+                        body = content.examples[exKey].value || content.examples[exKey].example || null;
+                      } else if (content.example) {
+                        body = content.example;
+                      } else if (content.schema) {
+                        body = sampleFromSchema(content.schema);
+                      }
+                    }
+                  }
+                }
+
+                // Build curl
+                let curl = `curl -X ${method.toUpperCase()} '${url}'`;
+                Object.keys(headers).forEach(h => {
+                  curl += ` -H '${h}: ${headers[h]}'`;
+                });
+                if (body !== null && body !== undefined) {
+                  const json = typeof body === 'string' ? body : JSON.stringify(body, null, 2);
+                  // escape single quotes safely
+                  const safe = json.replace(/'/g, "'" + "\\" + "'" + "'");
+                  curl += ` -d '${safe}'`;
+                }
+
+                await navigator.clipboard.writeText(curl);
+                btn.innerText = 'Copied!';
+                setTimeout(() => btn.innerText = 'Copy cURL', 1400);
+              } catch (err) {
+                console.error('Failed to build curl', err);
+              }
+            });
+
+            block.appendChild(btn);
+          });
+        }
+
+        // Periodically attempt to inject buttons as UI is dynamic
+        const interval = setInterval(addCurlButtons, 700);
+        // Stop after some time
+        setTimeout(() => clearInterval(interval), 20000);
+      };
+    </script>
+  </body>
+</html>

@@ -11,6 +11,7 @@ import { logout } from '../store/slices/authSlice';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
+import { NotificationCenter } from '../components/common/NotificationCenter';
 
 export const Dashboard: React.FC = () => {
     const dispatch = useDispatch();
@@ -120,6 +121,7 @@ export const Dashboard: React.FC = () => {
                             </div>
                         </div>
                         <div className="flex items-center gap-4">
+                            <NotificationCenter />
                             <ThemeToggle />
                             <button
                                 onClick={() => setIsHelpModalOpen(true)}
@@ -187,8 +189,8 @@ export const Dashboard: React.FC = () => {
                                 }`}
                             style={{
                                 animationDelay: `${index * 100}ms`,
-                                ringColor: statusFilter === stat.filter ? 'var(--primary)' : 'transparent'
-                            }}
+                                '--tw-ring-color': statusFilter === stat.filter ? 'var(--primary)' : 'transparent'
+                            } as React.CSSProperties}
                         >
                             <div className={`absolute inset-0 bg-gradient-to-br ${stat.bgGradient} dark:bg-gradient-to-br dark:${stat.darkBg} opacity-50`}></div>
                             <div className="relative z-10">
@@ -383,7 +385,7 @@ export const Dashboard: React.FC = () => {
                         </div>
                     )}
                 </div>
-            </main >
+            </main>
 
             <CreateComplaintModal
                 isOpen={isCreateModalOpen}
@@ -418,6 +420,6 @@ export const Dashboard: React.FC = () => {
                 onClose={() => setIsHelpModalOpen(false)}
                 role="CITIZEN"
             />
-        </div >
+        </div>
     );
 };

@@ -53,7 +53,6 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({ isOp
             formData.append('title', title);
             formData.append('description', description);
             formData.append('urgency', urgency);
-            formData.append('urgency', urgency);
             formData.append('location', location);
             if (departmentId) {
                 formData.append('departmentId', departmentId);

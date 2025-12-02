@@ -10,6 +10,7 @@ import { OfficerDashboard } from './pages/OfficerDashboard';
 import { DepartmentManagement } from './pages/DepartmentManagement';
 import { OfficerManagement } from './pages/OfficerManagement';
 import { FeedbackDashboard } from './pages/FeedbackDashboard';
+import { AnalyticsDashboard } from './pages/AnalyticsDashboard';
 import { Profile } from './pages/Profile';
 import { loginSuccess } from './store/slices/authSlice';
 import axios from 'axios';
@@ -49,6 +50,7 @@ const AppContent: React.FC = () => {
         <Route path="/admin/departments" element={<DepartmentManagement />} />
         <Route path="/admin/officers" element={<OfficerManagement />} />
         <Route path="/admin/feedback" element={<FeedbackDashboard />} />
+        <Route path="/admin/analytics" element={<AnalyticsDashboard />} />
         <Route path="/officer" element={<OfficerDashboard />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/" element={<Navigate to="/login" replace />} />

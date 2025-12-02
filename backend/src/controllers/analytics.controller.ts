@@ -1,116 +1,145 @@
 import { Request, Response } from 'express';
-import catchAsync from '../utils/catchAsync';
 import prisma from '../config/db';
-import { startOfMonth, endOfMonth, subMonths, format, startOfDay, endOfDay, subDays } from 'date-fns';
+import catchAsync from '../utils/catchAsync';
 
 export class AnalyticsController {
-    // Get complaint trends (last 6 months)
-    static getComplaintTrends = catchAsync(async (req: Request, res: Response) => {
-        const months = 6;
-        const trends = [];
+    static getDepartmentPerformance = catchAsync(async (req: Request, res: Response) => {
+        const { timeRange } = req.query;
 
-        for (let i = months - 1; i >= 0; i--) {
-            const date = subMonths(new Date(), i);
-            const start = startOfMonth(date);
-            const end = endOfMonth(date);
-            const monthName = format(date, 'MMM');
+        let dateFilter = {};
+        if (timeRange) {
+            const now = new Date();
+            const pastDate = new Date();
+            if (timeRange === '7d') pastDate.setDate(now.getDate() - 7);
+            else if (timeRange === '30d') pastDate.setDate(now.getDate() - 30);
+            else if (timeRange === '90d') pastDate.setDate(now.getDate() - 90);
 
-            const count = await prisma.complaint.count({
-                where: {
-                    createdAt: {
-                        gte: start,
-                        lte: end,
-                    },
-                },
-            });
-
-            const resolvedCount = await prisma.complaint.count({
-                where: {
-                    status: 'RESOLVED',
-                    updatedAt: { // Using updatedAt as proxy for resolution time if resolvedAt is null
-                        gte: start,
-                        lte: end,
-                    },
-                },
-            });
-
-            trends.push({
-                name: monthName,
-                total: count,
-                resolved: resolvedCount,
-            });
+            dateFilter = {
+                createdAt: {
+                    gte: pastDate
+                }
+            };
         }
 
-        res.status(200).json(trends);
-    });
-
-    // Get department performance
-    static getDepartmentPerformance = catchAsync(async (req: Request, res: Response) => {
         const departments = await prisma.department.findMany({
             include: {
-                _count: {
-                    select: {
-                        complaints: true,
-                    },
-                },
+                officers: true,
                 complaints: {
-                    where: {
-                        status: 'RESOLVED',
-                    },
-                    select: {
-                        id: true,
-                    },
-                },
-            },
+                    where: dateFilter,
+                    include: {
+                        feedback: true
+                    }
+                }
+            }
         });
 
-        const performance = departments.map(dept => {
-            const total = dept._count.complaints;
-            const resolved = dept.complaints.length;
-            const resolutionRate = total > 0 ? Math.round((resolved / total) * 100) : 0;
+        const stats = departments.map(dept => {
+            const totalComplaints = dept.complaints.length;
+            const resolvedComplaints = dept.complaints.filter(c => c.status === 'RESOLVED');
+            const pendingComplaints = dept.complaints.filter(c => c.status !== 'RESOLVED');
+
+            // Calculate average resolution time (in days)
+            let totalResolutionTime = 0;
+            let resolvedCountWithTime = 0;
+
+            resolvedComplaints.forEach(c => {
+                if (c.resolvedAt) {
+                    const diffTime = new Date(c.resolvedAt).getTime() - new Date(c.createdAt).getTime();
+                    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+                    totalResolutionTime += diffDays;
+                    resolvedCountWithTime++;
+                }
+            });
+
+            const avgResolutionTime = resolvedCountWithTime > 0 ? totalResolutionTime / resolvedCountWithTime : 0;
+
+            // Calculate satisfaction score (average rating * 20 to get percentage)
+            let totalRating = 0;
+            let feedbackCount = 0;
+
+            dept.complaints.forEach(c => {
+                if (c.feedback) {
+                    totalRating += c.feedback.rating;
+                    feedbackCount++;
+                }
+            });
+
+            const avgRating = feedbackCount > 0 ? totalRating / feedbackCount : 0;
+            const satisfactionScore = feedbackCount > 0 ? Math.round(avgRating * 20) : 0; // 5 stars = 100%
 
             return {
-                name: dept.name,
-                total,
-                resolved,
-                resolutionRate,
+                departmentId: dept.id,
+                departmentName: dept.name,
+                totalComplaints,
+                resolved: resolvedComplaints.length,
+                pending: pendingComplaints.length,
+                avgResolutionTime,
+                satisfactionScore,
+                activeOfficers: dept.officers.length
             };
         });
 
-        res.status(200).json(performance);
+        res.json(stats);
     });
 
-    // Get complaint status distribution
-    static getStatusDistribution = catchAsync(async (req: Request, res: Response) => {
-        const distribution = await prisma.complaint.groupBy({
-            by: ['status'],
-            _count: {
+    static getTrends = catchAsync(async (req: Request, res: Response) => {
+        const { timeRange } = req.query;
+
+        const now = new Date();
+        const pastDate = new Date();
+        let days = 30;
+
+        if (timeRange === '7d') days = 7;
+        else if (timeRange === '90d') days = 90;
+
+        pastDate.setDate(now.getDate() - days);
+
+        const complaints = await prisma.complaint.findMany({
+            where: {
+                createdAt: {
+                    gte: pastDate
+                }
+            },
+            select: {
+                createdAt: true,
                 status: true,
-            },
+                resolvedAt: true
+            }
         });
 
-        const formatted = distribution.map(item => ({
-            name: item.status,
-            value: item._count.status,
-        }));
+        // Group by date
+        const trendsMap = new Map<string, { complaints: number, resolved: number }>();
 
-        res.status(200).json(formatted);
-    });
+        // Initialize all dates
+        for (let i = 0; i < days; i++) {
+            const d = new Date();
+            d.setDate(now.getDate() - i);
+            const dateStr = d.toISOString().split('T')[0];
+            trendsMap.set(dateStr, { complaints: 0, resolved: 0 });
+        }
 
-    // Get urgency distribution
-    static getUrgencyDistribution = catchAsync(async (req: Request, res: Response) => {
-        const distribution = await prisma.complaint.groupBy({
-            by: ['urgency'],
-            _count: {
-                urgency: true,
-            },
+        complaints.forEach(c => {
+            const createdDate = new Date(c.createdAt).toISOString().split('T')[0];
+            if (trendsMap.has(createdDate)) {
+                trendsMap.get(createdDate)!.complaints++;
+            }
+
+            if (c.status === 'RESOLVED' && c.resolvedAt) {
+                const resolvedDate = new Date(c.resolvedAt).toISOString().split('T')[0];
+                if (trendsMap.has(resolvedDate)) {
+                    trendsMap.get(resolvedDate)!.resolved++;
+                }
+            }
         });
 
-        const formatted = distribution.map(item => ({
-            name: item.urgency,
-            value: item._count.urgency,
-        }));
+        const trends = Array.from(trendsMap.entries())
+            .map(([date, data]) => ({
+                date,
+                complaints: data.complaints,
+                resolved: data.resolved
+            }))
+            .sort((a, b) => a.date.localeCompare(b.date));
 
-        res.status(200).json(formatted);
+        res.json(trends);
     });
 }
