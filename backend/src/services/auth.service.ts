@@ -53,8 +53,8 @@ export class AuthService {
     }
 
     static async login(email: string, password: string) {
-        const user = await prisma.user.findUnique({ where: { email } });
-        if (!user || !(await bcrypt.compare(password, user.password))) {
+        const user: any = await prisma.user.findUnique({ where: { email } });
+        if (!user || !(await bcrypt.compare(password, user?.password))) {
             throw new AppError('Invalid credentials', 401);
         }
 

@@ -5,6 +5,14 @@ interface User {
     name: string;
     email: string;
     role: 'CITIZEN' | 'ADMIN' | 'OFFICER';
+    phone?: string;
+    dateOfBirth?: string;
+    gender?: string;
+    address?: string;
+    emergencyContact?: string;
+    aadharNumber?: string;
+    designation?: string;
+    profilePicture?: string;
 }
 
 interface AuthState {

@@ -41,15 +41,25 @@ export class LeaveController {
             }
         });
 
-        // Create notification for admin
-        await prisma.notification.create({
-            data: {
-                userId: userId, // Will be sent to all admins in real implementation
-                title: 'New Leave Request',
-                message: `${leave.user.name} has requested ${type} leave for ${days} day(s)`,
-                type: 'LEAVE',
-            }
+        // Get all admins to notify them
+        const admins = await prisma.user.findMany({
+            where: { role: 'ADMIN' },
+            select: { id: true }
         });
+
+        // Create notifications for all admins
+        await Promise.all(
+            admins.map(admin =>
+                prisma.notification.create({
+                    data: {
+                        userId: admin.id,
+                        title: 'New Leave Request',
+                        message: `${leave.user.name} has requested ${type} leave for ${days} day(s)`,
+                        type: 'LEAVE',
+                    }
+                })
+            )
+        );
 
         res.status(201).json(leave);
     });

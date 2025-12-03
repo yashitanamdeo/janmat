@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { OfficersListModal } from '../components/analytics/OfficersListModal';
 import { DepartmentComplaintsModal } from '../components/analytics/DepartmentComplaintsModal';
-import { ComplaintDetailsModal } from '../components/complaint/ComplaintDetailsModal';
 
 interface DepartmentStats {
     departmentId: string;
@@ -25,7 +24,6 @@ export const AnalyticsDashboard: React.FC = () => {
     // Modal states
     const [officersModal, setOfficersModal] = useState<{ isOpen: boolean; deptId: string; deptName: string }>({ isOpen: false, deptId: '', deptName: '' });
     const [complaintsModal, setComplaintsModal] = useState<{ isOpen: boolean; deptId: string; deptName: string }>({ isOpen: false, deptId: '', deptName: '' });
-    const [viewComplaint, setViewComplaint] = useState<any>(null);
 
     useEffect(() => {
         loadAnalytics();
@@ -285,16 +283,6 @@ export const AnalyticsDashboard: React.FC = () => {
                 onClose={() => setComplaintsModal({ isOpen: false, deptId: '', deptName: '' })}
                 departmentId={complaintsModal.deptId}
                 departmentName={complaintsModal.deptName}
-                onComplaintClick={(complaint) => {
-                    setViewComplaint(complaint);
-                    setComplaintsModal({ isOpen: false, deptId: '', deptName: '' });
-                }}
-            />
-
-            <ComplaintDetailsModal
-                isOpen={!!viewComplaint}
-                onClose={() => setViewComplaint(null)}
-                complaint={viewComplaint}
             />
         </div>
     );

@@ -20,7 +20,7 @@ interface TrendsChartProps {
 
 export const TrendsChart: React.FC<TrendsChartProps> = ({ data }) => {
     return (
-        <div className="h-80 w-full">
+        <div className="w-full" style={{ minHeight: '320px', height: '320px' }}>
             <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                     data={data}

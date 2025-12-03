@@ -21,6 +21,7 @@ export const Profile: React.FC = () => {
         emergencyContact: user?.emergencyContact || '',
         aadharNumber: user?.aadharNumber || '',
         designation: user?.designation || '',
+        profilePicture: user?.profilePicture || '',
     });
 
     const [loading, setLoading] = useState(false);
@@ -40,6 +41,7 @@ export const Profile: React.FC = () => {
                 emergencyContact: user.emergencyContact || '',
                 aadharNumber: user.aadharNumber || '',
                 designation: user.designation || '',
+                profilePicture: user.profilePicture || '',
             });
         }
     }, [user]);
@@ -49,6 +51,24 @@ export const Profile: React.FC = () => {
             ...prev,
             [e.target.name]: e.target.value
         }));
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            if (file.size > 500000) { // 500KB limit
+                setError('File size too large. Max 500KB.');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setFormData(prev => ({
+                    ...prev,
+                    profilePicture: reader.result as string
+                }));
+            };
+            reader.readAsDataURL(file);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -185,6 +205,24 @@ export const Profile: React.FC = () => {
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Profile Picture */}
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Profile Picture</label>
+                                <div className="flex items-center gap-4">
+                                    {formData.profilePicture && (
+                                        <img src={formData.profilePicture} alt="Profile" className="w-16 h-16 rounded-full object-cover border-2 border-gray-200" />
+                                    )}
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleFileChange}
+                                        disabled={!isEditing}
+                                        className="modern-input p-2"
+                                        style={{ opacity: isEditing ? 1 : 0.7 }}
+                                    />
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1">Max size 500KB</p>
+                            </div>
                             {/* Full Name */}
                             <div>
                                 <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Full Name *</label>
@@ -403,6 +441,7 @@ export const Profile: React.FC = () => {
                                             emergencyContact: user?.emergencyContact || '',
                                             aadharNumber: user?.aadharNumber || '',
                                             designation: user?.designation || '',
+                                            profilePicture: user?.profilePicture || '',
                                         });
                                         setError('');
                                     }}

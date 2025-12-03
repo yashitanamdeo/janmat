@@ -85,6 +85,64 @@ export class AdminController {
         res.json(officersWithCounts);
     });
 
+    static getOfficerById = catchAsync(async (req: Request, res: Response) => {
+        const { id } = req.params;
+
+        const officer = await prisma.user.findFirst({
+            where: {
+                id,
+                role: 'OFFICER'
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+                departmentId: true,
+                department: {
+                    select: {
+                        id: true,
+                        name: true,
+                    }
+                },
+                assignedComplaints: {
+                    select: {
+                        id: true,
+                        title: true,
+                        status: true,
+                        urgency: true,
+                        createdAt: true,
+                        user: {
+                            select: {
+                                name: true,
+                            }
+                        }
+                    },
+                    orderBy: {
+                        createdAt: 'desc'
+                    }
+                }
+            },
+        });
+
+        if (!officer) {
+            return res.status(404).json({ message: 'Officer not found' });
+        }
+
+        // Add performance stats
+        const officerWithStats = {
+            ...officer,
+            _count: {
+                assignedComplaints: officer.assignedComplaints.length,
+                resolvedComplaints: officer.assignedComplaints.filter(c => c.status === 'RESOLVED').length,
+                pendingComplaints: officer.assignedComplaints.filter(c => c.status === 'PENDING').length,
+                inProgressComplaints: officer.assignedComplaints.filter(c => c.status === 'IN_PROGRESS').length,
+            }
+        };
+
+        res.json(officerWithStats);
+    });
+
     static assignComplaint = catchAsync(async (req: Request, res: Response) => {
         const { id } = req.params;
         const { officerId } = req.body;

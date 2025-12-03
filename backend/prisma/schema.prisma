@@ -18,7 +18,7 @@ model User {
   name      String
   email     String?  @unique
   phone     String?  @unique
-  password  String
+  password  String?  // Made optional for OAuth users
   role      Role     @default(CITIZEN)
   dateOfBirth DateTime? // For age validation
   gender    String?   // MALE, FEMALE, OTHER
@@ -28,6 +28,11 @@ model User {
   aadharNumber String? // Optional Aadhar number
   designation String? // For officers: designation/rank
   isVerified Boolean @default(false)
+  
+  // OAuth fields
+  provider  String? @default("LOCAL") // GOOGLE, FACEBOOK, APPLE, LOCAL
+  providerId String? // OAuth provider's user ID
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   complaints Complaint[]
@@ -39,6 +44,7 @@ model User {
   attendance Attendance[]
   leaves Leave[]
 
+  @@unique([provider, providerId])
   @@map("users")
 }
 

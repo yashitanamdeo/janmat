@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Provider, useDispatch } from 'react-redux';
 import { store } from './store/store';
 import { Login } from './pages/Login';
@@ -16,6 +16,9 @@ import { AdminAttendancePage } from './pages/AdminAttendancePage';
 import { OfficerLeavePage } from './pages/OfficerLeavePage';
 import { AdminLeavePage } from './pages/AdminLeavePage';
 import { Profile } from './pages/Profile';
+import { LandingPage } from './pages/LandingPage';
+import { FeaturesPage } from './pages/FeaturesPage';
+import { AboutPage } from './pages/AboutPage';
 import { loginSuccess } from './store/slices/authSlice';
 import axios from 'axios';
 
@@ -61,7 +64,9 @@ const AppContent: React.FC = () => {
         <Route path="/officer/attendance" element={<AttendancePage />} />
         <Route path="/officer/leaves" element={<OfficerLeavePage />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/features" element={<FeaturesPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/" element={<LandingPage />} />
       </Routes>
     </Router>
   );

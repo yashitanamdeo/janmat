@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
 import { NotificationCenter } from '../components/common/NotificationCenter';
-import { ComplaintDetailsModal } from '../components/complaint/ComplaintDetailsModal';
+import { EnhancedComplaintDetailsModal } from '../components/complaint/EnhancedComplaintDetailsModal';
 import { useRealTimeUpdates } from '../hooks/useRealTimeUpdates';
 
 export const Dashboard: React.FC = () => {
@@ -430,10 +430,19 @@ export const Dashboard: React.FC = () => {
                 role="CITIZEN"
             />
 
-            <ComplaintDetailsModal
+            <EnhancedComplaintDetailsModal
+                complaintId={viewComplaint?.id}
                 isOpen={!!viewComplaint}
                 onClose={() => setViewComplaint(null)}
-                complaint={viewComplaint}
+                onUpdate={() => {
+                    // Refresh complaints list
+                    const token = localStorage.getItem('token');
+                    axios.get('http://localhost:3000/api/complaints/my-complaints', {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }).then(response => {
+                        dispatch(fetchComplaintsSuccess(response.data));
+                    });
+                }}
             />
         </div>
     );

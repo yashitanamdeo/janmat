@@ -13,7 +13,7 @@ import { HelpModal } from '../components/ui/HelpModal';
 import { NotificationCenter } from '../components/common/NotificationCenter';
 import { QuickActionsPanel } from '../components/admin/QuickActionsPanel';
 import { AdvancedSearch } from '../components/admin/AdvancedSearch';
-import { ComplaintDetailsModal } from '../components/complaint/ComplaintDetailsModal';
+import { EnhancedComplaintDetailsModal } from '../components/complaint/EnhancedComplaintDetailsModal';
 import { StatCard } from '../components/admin/StatCard';
 import { AllComplaintsModal } from '../components/admin/AllComplaintsModal';
 import { AllOfficersModal } from '../components/admin/AllOfficersModal';
@@ -634,10 +634,11 @@ export const AdminDashboard: React.FC = () => {
 
             <QuickActionsPanel onActionComplete={loadData} />
 
-            <ComplaintDetailsModal
-                complaint={viewComplaint}
+            <EnhancedComplaintDetailsModal
+                complaintId={viewComplaint?.id}
                 isOpen={!!viewComplaint}
                 onClose={() => setViewComplaint(null)}
+                onUpdate={loadData}
             />
 
             <AllComplaintsModal

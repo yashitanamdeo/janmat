@@ -130,6 +130,17 @@ export class ComplaintService {
             console.error('Socket error:', e);
         }
 
+        // Create notification for the user
+        await prisma.notification.create({
+            data: {
+                userId: updatedComplaint.userId,
+                title: 'Complaint Status Updated',
+                message: `Your complaint "${updatedComplaint.title}" status has been updated to ${status}.`,
+                type: 'STATUS',
+                actionUrl: `/dashboard`
+            }
+        });
+
         return updatedComplaint;
     }
 

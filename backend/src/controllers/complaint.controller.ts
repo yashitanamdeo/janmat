@@ -43,7 +43,7 @@ export class ComplaintController {
     static updateStatus = catchAsync(async (req: Request, res: Response) => {
         const { id } = req.params;
         const { status, comment } = updateStatusSchema.parse(req.body);
-        const updatedBy = (req as any).user.id; // In real app, check if user is officer/admin
+        const updatedBy = (req as any).user.name; // In real app, check if user is officer/admin
 
         const complaint = await ComplaintService.updateStatus(id, status, comment, updatedBy);
         res.status(200).json(complaint);
@@ -53,7 +53,32 @@ export class ComplaintController {
         const { id } = req.params;
         const complaint = await prisma.complaint.findUnique({
             where: { id },
-            include: { attachments: true, timeline: true },
+            include: {
+                attachments: true,
+                timeline: true,
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        phone: true
+                    }
+                },
+                assignedOfficer: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        phone: true
+                    }
+                },
+                department: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                }
+            },
         });
         if (!complaint) {
             return res.status(404).json({ message: 'Complaint not found' });
