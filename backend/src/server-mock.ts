@@ -259,7 +259,7 @@ app.post('/api/complaints', (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Failed to create complaint',
-            error: error.message
+            error: error instanceof Error ? error.message : 'Unknown error'
         });
     }
 });
