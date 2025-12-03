@@ -141,7 +141,7 @@ Keep this safe ✅
    - **Environment:** Node
    - **Region:** Frankfurt (or closest)
    - **Branch:** janmat
-   - **Build Command:** `npm install --include=dev && npm run build`
+   - **Build Command:** `npm ci --include=dev && npm run build`
    - **Start Command:** `npm start`
    - **Instance Type:** Free
 
