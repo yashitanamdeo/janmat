@@ -3,8 +3,19 @@ info:
   title: JanMat API
   version: 1.0.0
   description: |
-    Complete API documentation for the JanMat project. Includes authentication,
-    complaints, departments, feedback, notifications, admin and analytics endpoints.
+    Complete API documentation for the JanMat project (JanMat). This documentation is
+    written to be accessible to technical and non-technical readers. Each endpoint
+    includes: why the endpoint exists, expected headers, example requests (payloads),
+    and example responses. Use the interactive UI to try requests and copy cURL
+    commands for Postman or terminal.
+    
+    High-level areas: Authentication, Complaints (create/view/update), Departments,
+    Feedback, Notifications, Admin operations and Analytics.
+  contact:
+    name: JanMat Team
+    email: support@example.com
+  license:
+    name: MIT
 servers:
   - url: http://localhost:4000/api
     description: Local development server
@@ -24,6 +35,9 @@ components:
         message:
           type: string
           example: "Resource not found"
+      example:
+        status: error
+        message: "Complaints not found"
 
     User:
       type: object
@@ -39,6 +53,12 @@ components:
         role:
           type: string
           enum: [CITIZEN, OFFICER, ADMIN]
+      example:
+        id: user_abc123
+        name: Ananya Sharma
+        email: ananya@example.com
+        phone: '+919876543210'
+        role: CITIZEN
 
     AuthRegister:
       type: object
@@ -54,6 +74,12 @@ components:
         dateOfBirth:
           type: string
       required: [email, phone, password]
+      example:
+        name: Ananya Sharma
+        email: ananya@example.com
+        phone: '+919876543210'
+        password: 'Password123!'
+        dateOfBirth: '1990-05-20'
 
     AuthLogin:
       type: object
@@ -63,12 +89,19 @@ components:
         password:
           type: string
       required: [email, password]
+      example:
+        email: ananya@example.com
+        password: 'Password123!'
 
     AuthResponse:
       type: object
       properties:
         token:
           type: string
+        user:
+          $ref: '#/components/schemas/User'
+      example:
+        token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         user:
           $ref: '#/components/schemas/User'
 
@@ -85,6 +118,11 @@ components:
         location:
           type: string
       required: [title, description, urgency]
+      example:
+        title: Pothole on Main Street near Market
+        description: A large pothole has appeared outside the main market entrance. Vehicles are getting damaged.
+        urgency: MEDIUM
+        location: 'Main Street, Market Road, Sector 5'
 
     Complaint:
       type: object
@@ -112,6 +150,17 @@ components:
                 type: string
               url:
                 type: string
+      example:
+        id: comp_123abc
+        title: Pothole on Main Street near Market
+        description: A large pothole has appeared outside the main market entrance. Vehicles are getting damaged.
+        urgency: MEDIUM
+        status: PENDING
+        userId: user_abc123
+        createdAt: '2025-11-30T08:45:00.000Z'
+        attachments:
+          - id: att_1
+            url: 'http://localhost:3000/uploads/att_1.jpg'
 
     Department:
       type: object
@@ -122,6 +171,10 @@ components:
           type: string
         description:
           type: string
+      example:
+        id: dept_roads
+        name: Roads Department
+        description: Handles road repairs, potholes and street maintenance.
 
     Feedback:
       type: object
@@ -134,6 +187,11 @@ components:
           type: integer
         comment:
           type: string
+      example:
+        complaintId: comp_123abc
+        userId: user_abc123
+        rating: 4
+        comment: 'Quick resolution, thank you.'
 
     Notification:
       type: object
@@ -146,11 +204,20 @@ components:
           type: string
         read:
           type: boolean
+      example:
+        id: notif_1
+        title: Complaint Assigned
+        body: 'Your complaint has been assigned to Officer Raj.'
+        read: false
 
 paths:
   /auth/register:
     post:
       summary: Register a user
+      description: |
+        Create a new account. This endpoint is intended for citizens. After registering
+        the user will receive an OTP to verify the account. Passwords must be at least
+        6 characters. Do not share your password with anyone.
       requestBody:
         required: true
         content:
@@ -164,6 +231,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuthResponse'
+              examples:
+                success:
+                  summary: Example success response
+                  value:
+                    token: "<JWT_TOKEN>"
+                    user:
+                      id: user_abc123
+                      name: Ananya Sharma
+                      email: ananya@example.com
         '400':
           $ref: '#/components/schemas/ErrorResponse'
 
@@ -190,6 +266,9 @@ paths:
   /auth/login:
     post:
       summary: Login with email and password
+      description: |
+        Login returns a short-lived JWT token. Use this token in the `Authorization` header
+        with the format `Bearer <TOKEN>` for protected endpoints.
       requestBody:
         required: true
         content:
@@ -203,6 +282,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuthResponse'
+              examples:
+                success:
+                  value:
+                    token: "<JWT_TOKEN>"
+                    user:
+                      id: user_abc123
+                      name: Ananya Sharma
+                      email: ananya@example.com
         '401':
           $ref: '#/components/schemas/ErrorResponse'
 
@@ -268,6 +355,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Complaint'
+              examples:
+                created:
+                  summary: Complaint created example
+                  value:
+                    id: comp_123abc
+                    title: Pothole on Main Street near Market
+                    description: A large pothole outside the main market entrance.
+                    urgency: MEDIUM
+                    status: PENDING
+                    createdAt: '2025-11-30T08:45:00.000Z'
     get:
       summary: Get complaints of authenticated user
       security:
@@ -300,6 +397,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Complaint'
+              examples:
+                sample:
+                  summary: Full complaint with attachments example
+                  value:
+                    id: comp_123abc
+                    title: Pothole on Main Street near Market
+                    description: A large pothole has appeared outside the main market entrance. Vehicles are getting damaged.
+                    urgency: MEDIUM
+                    status: PENDING
+                    userId: user_abc123
+                    createdAt: '2025-11-30T08:45:00.000Z'
+                    attachments:
+                      - id: att_1
+                        url: 'http://localhost:3000/uploads/att_1.jpg'
         '404':
           $ref: '#/components/schemas/ErrorResponse'
     put:

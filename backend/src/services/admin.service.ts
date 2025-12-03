@@ -39,7 +39,14 @@ export class AdminService {
             skip,
             take: Number(limit),
             orderBy: { createdAt: 'desc' },
-            include: { user: { select: { email: true, phone: true } } },
+            include: {
+                user: { select: { email: true, phone: true, name: true } },
+                department: { select: { id: true, name: true } },
+                assignedOfficer: { select: { id: true, name: true, email: true } },
+                attachments: true,
+                timeline: true,
+                feedback: true,
+            },
         });
 
         const total = await prisma.complaint.count({ where });

@@ -67,6 +67,13 @@ export class ComplaintService {
                         name: true,
                     },
                 },
+                assignedOfficer: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
             },
             orderBy: { createdAt: 'desc' },
         });

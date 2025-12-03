@@ -65,7 +65,17 @@ export class AnalyticsController {
             });
 
             const avgRating = feedbackCount > 0 ? totalRating / feedbackCount : 0;
-            const satisfactionScore = feedbackCount > 0 ? Math.round(avgRating * 20) : 0; // 5 stars = 100%
+
+            // Calculate satisfaction score
+            // If we have feedback, use rating-based score (5 stars = 100%)
+            // Otherwise, use resolution rate as a performance indicator
+            let satisfactionScore = 0;
+            if (feedbackCount > 0) {
+                satisfactionScore = Math.round(avgRating * 20); // 5 stars = 100%
+            } else if (totalComplaints > 0) {
+                // Use resolution rate as performance metric when no feedback
+                satisfactionScore = Math.round((resolvedComplaints.length / totalComplaints) * 100);
+            }
 
             return {
                 departmentId: dept.id,
@@ -108,24 +118,24 @@ export class AnalyticsController {
         });
 
         // Group by date
-        const trendsMap = new Map<string, { complaints: number, resolved: number }>();
+        const trendsMap = new Map<string, { total: number, resolved: number }>();
 
         // Initialize all dates
         for (let i = 0; i < days; i++) {
             const d = new Date();
             d.setDate(now.getDate() - i);
-            const dateStr = d.toISOString().split('T')[0];
-            trendsMap.set(dateStr, { complaints: 0, resolved: 0 });
+            const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            trendsMap.set(dateStr, { total: 0, resolved: 0 });
         }
 
         complaints.forEach(c => {
-            const createdDate = new Date(c.createdAt).toISOString().split('T')[0];
+            const createdDate = new Date(c.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
             if (trendsMap.has(createdDate)) {
-                trendsMap.get(createdDate)!.complaints++;
+                trendsMap.get(createdDate)!.total++;
             }
 
             if (c.status === 'RESOLVED' && c.resolvedAt) {
-                const resolvedDate = new Date(c.resolvedAt).toISOString().split('T')[0];
+                const resolvedDate = new Date(c.resolvedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                 if (trendsMap.has(resolvedDate)) {
                     trendsMap.get(resolvedDate)!.resolved++;
                 }
@@ -133,12 +143,12 @@ export class AnalyticsController {
         });
 
         const trends = Array.from(trendsMap.entries())
-            .map(([date, data]) => ({
-                date,
-                complaints: data.complaints,
+            .map(([name, data]) => ({
+                name,
+                total: data.total,
                 resolved: data.resolved
             }))
-            .sort((a, b) => a.date.localeCompare(b.date));
+            .reverse(); // Show chronological order
 
         res.json(trends);
     });

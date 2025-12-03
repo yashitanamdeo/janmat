@@ -6,6 +6,7 @@
   "scripts": {
     "start": "ts-node src/server.ts",
     "dev": "ts-node src/server.ts",
+    "build": "tsc",
     "docs:json": "node scripts/generate-docs.js --json",
     "docs:pdf": "node scripts/generate-docs.js --pdf",
     "test": "echo \"Error: no test specified\" && exit 1"

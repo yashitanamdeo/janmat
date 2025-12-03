@@ -8,6 +8,8 @@ import notificationRoutes from './routes/notification.routes';
 import departmentRoutes from './routes/department.routes';
 import feedbackRoutes from './routes/feedback.routes';
 import analyticsRoutes from './routes/analytics.routes';
+import attendanceRoutes from './routes/attendance.routes';
+import leaveRoutes from './routes/leave.routes';
 
 import officerRoutes from './routes/officer.routes';
 import docsRouter from './docs';
@@ -28,6 +30,8 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/departments', departmentRoutes);
 app.use('/api', feedbackRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/attendance', attendanceRoutes);
+app.use('/api/leaves', leaveRoutes);
 // API documentation (OpenAPI + static UI)
 app.use('/docs', docsRouter);
 

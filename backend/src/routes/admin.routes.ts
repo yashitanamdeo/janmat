@@ -20,7 +20,12 @@ router.post('/complaints/search', AdminController.advancedSearch);
 
 // Officer management
 router.get('/officers', AdminController.getOfficers);
+router.post('/officers', AdminController.createOfficer);
+router.put('/officers/:id', AdminController.updateOfficer);
 router.patch('/officers/:officerId/department', AdminController.updateOfficerDepartment);
+
+// Department management
+router.get('/departments', AdminController.getDepartments);
 
 // Reports
 router.get('/reports/weekly', AdminController.getWeeklyReport);

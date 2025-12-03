@@ -111,12 +111,23 @@ export class AuthService {
     }
 
     static async updateUserProfile(userId: string, updates: any) {
+        const updateData: any = {};
+
+        // Only update fields that are provided
+        if (updates.name !== undefined) updateData.name = updates.name;
+        if (updates.phone !== undefined) updateData.phone = updates.phone;
+        if (updates.email !== undefined) updateData.email = updates.email;
+        if (updates.dateOfBirth !== undefined) updateData.dateOfBirth = updates.dateOfBirth ? new Date(updates.dateOfBirth) : null;
+        if (updates.gender !== undefined) updateData.gender = updates.gender;
+        if (updates.address !== undefined) updateData.address = updates.address;
+        if (updates.emergencyContact !== undefined) updateData.emergencyContact = updates.emergencyContact;
+        if (updates.aadharNumber !== undefined) updateData.aadharNumber = updates.aadharNumber;
+        if (updates.designation !== undefined) updateData.designation = updates.designation;
+        if (updates.profilePicture !== undefined) updateData.profilePicture = updates.profilePicture;
+
         const user = await prisma.user.update({
             where: { id: userId },
-            data: {
-                name: updates.name,
-                phone: updates.phone,
-            },
+            data: updateData,
             select: {
                 id: true,
                 name: true,
@@ -124,6 +135,15 @@ export class AuthService {
                 phone: true,
                 role: true,
                 isVerified: true,
+                dateOfBirth: true,
+                gender: true,
+                address: true,
+                emergencyContact: true,
+                aadharNumber: true,
+                designation: true,
+                // profilePicture: true,
+                departmentId: true,
+                department: { select: { id: true, name: true } },
             },
         });
 

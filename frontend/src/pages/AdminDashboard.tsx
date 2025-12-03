@@ -37,6 +37,7 @@ export const AdminDashboard: React.FC = () => {
     const [viewComplaint, setViewComplaint] = useState<any>(null);
     const [showAllComplaintsModal, setShowAllComplaintsModal] = useState(false);
     const [showAllOfficersModal, setShowAllOfficersModal] = useState(false);
+    const [isSearchActive, setIsSearchActive] = useState(false);
     const [stats, setStats] = useState({
         totalComplaints: 0,
         pendingComplaints: 0,
@@ -45,6 +46,10 @@ export const AdminDashboard: React.FC = () => {
         totalDepartments: 0,
         avgResolutionTime: 0
     });
+    const [sortField, setSortField] = useState<string>('createdAt');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10);
 
     // Enable real-time updates
     useRealTimeUpdates();
@@ -54,58 +59,43 @@ export const AdminDashboard: React.FC = () => {
     }, [dispatch]);
 
     const loadData = async () => {
+        setIsSearchActive(false);
         dispatch(fetchComplaintsStart());
+
+        const token = localStorage.getItem('token');
+        const headers = { Authorization: `Bearer ${token}` };
+
         try {
-            const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:3000/api/admin/complaints', {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            dispatch(fetchComplaintsSuccess(response.data));
-
-            // Load analytics
-            const trendsRes = await axios.get('http://localhost:3000/api/analytics/trends', {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            setTrendsData(trendsRes.data);
-
-            const perfRes = await axios.get('http://localhost:3000/api/analytics/department-performance', {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            setPerformanceData(perfRes.data);
-
-            // Calculate stats
-            const officersRes = await axios.get('http://localhost:3000/api/admin/officers', {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-
-            const departmentsRes = await axios.get('http://localhost:3000/api/admin/departments', {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-
-            const complaints = response.data;
-            const pendingCount = complaints.filter((c: any) => c.status === 'PENDING').length;
-            const resolvedCount = complaints.filter((c: any) => c.status === 'RESOLVED').length;
-
-            // Calculate average resolution time
-            const resolvedComplaints = complaints.filter((c: any) => c.status === 'RESOLVED' && c.resolvedAt);
-            const avgTime = resolvedComplaints.length > 0
-                ? resolvedComplaints.reduce((sum: number, c: any) => {
-                    const created = new Date(c.createdAt).getTime();
-                    const resolved = new Date(c.resolvedAt).getTime();
-                    return sum + (resolved - created) / (1000 * 60 * 60 * 24); // Convert to days
-                }, 0) / resolvedComplaints.length
-                : 0;
-
-            setStats({
-                totalComplaints: complaints.length,
-                pendingComplaints: pendingCount,
-                resolvedComplaints: resolvedCount,
-                totalOfficers: officersRes.data.length,
-                totalDepartments: departmentsRes.data.length,
-                avgResolutionTime: avgTime
-            });
+            // Fetch complaints
+            const complaintsRes = await axios.get('http://localhost:3000/api/admin/complaints', { headers });
+            dispatch(fetchComplaintsSuccess(complaintsRes.data));
         } catch (err: any) {
             dispatch(fetchComplaintsFailure(err.message));
+        }
+
+        // Fetch other data independently
+        try {
+            const [trendsRes, perfRes, officersRes, departmentsRes] = await Promise.allSettled([
+                axios.get('http://localhost:3000/api/analytics/trends', { headers }),
+                axios.get('http://localhost:3000/api/analytics/department-performance', { headers }),
+                axios.get('http://localhost:3000/api/admin/officers', { headers }),
+                axios.get('http://localhost:3000/api/admin/departments', { headers })
+            ]);
+
+            if (trendsRes.status === 'fulfilled') setTrendsData(trendsRes.value.data);
+            if (perfRes.status === 'fulfilled') setPerformanceData(perfRes.value.data);
+
+            const officersCount = officersRes.status === 'fulfilled' ? officersRes.value.data.length : 0;
+            const departmentsCount = departmentsRes.status === 'fulfilled' ? departmentsRes.value.data.length : 0;
+
+            setStats(prev => ({
+                ...prev,
+                totalOfficers: officersCount,
+                totalDepartments: departmentsCount
+            }));
+
+        } catch (err) {
+            console.error('Error loading dashboard data', err);
         }
     };
 
@@ -142,6 +132,26 @@ export const AdminDashboard: React.FC = () => {
     const handleSearchResults = (results: any[]) => {
         dispatch(fetchComplaintsSuccess(results));
         setShowAdvancedSearch(false);
+        setIsSearchActive(true);
+    };
+
+    const handleSort = (field: string) => {
+        if (sortField === field) {
+            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortField(field);
+            setSortOrder('desc');
+        }
+    };
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
+
+    const clearFilters = () => {
+        setStatusFilter('ALL');
+        setCurrentPage(1);
+        loadData();
     };
 
     const filteredComplaints = statusFilter === 'ALL'
@@ -149,6 +159,28 @@ export const AdminDashboard: React.FC = () => {
         : statusFilter === 'UNASSIGNED'
             ? complaints.filter(c => !(c as any).assignedTo)
             : complaints.filter(c => c.status === statusFilter);
+
+    const sortedComplaints = [...filteredComplaints].sort((a: any, b: any) => {
+        const aValue = a[sortField];
+        const bValue = b[sortField];
+
+        if (sortField === 'assignedOfficer') {
+            const aName = a.assignedOfficer?.name || '';
+            const bName = b.assignedOfficer?.name || '';
+            return sortOrder === 'asc' ? aName.localeCompare(bName) : bName.localeCompare(aName);
+        }
+
+        if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    const paginatedComplaints = sortedComplaints.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
+    const totalPages = Math.ceil(sortedComplaints.length / itemsPerPage);
 
 
 
@@ -240,6 +272,15 @@ export const AdminDashboard: React.FC = () => {
                                 </svg>
                                 Refresh
                             </button>
+                            {/* <button
+                                onClick={() => setStatusFilter('UNASSIGNED')}
+                                className="px-4 py-2 rounded-xl font-semibold text-white bg-red-500 bg-opacity-80 hover:bg-opacity-100 transition-all hover:scale-105 flex items-center gap-2 border border-red-400 border-opacity-30"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                Unassigned
+                            </button> */}
                             <button
                                 onClick={() => handleExport('csv')}
                                 className="px-4 py-2 rounded-xl font-semibold text-blue-600 bg-white transition-all hover:scale-105 flex items-center gap-2 shadow-lg"
@@ -286,6 +327,24 @@ export const AdminDashboard: React.FC = () => {
                                 Feedback
                             </button>
                             <button
+                                onClick={() => navigate('/admin/attendance')}
+                                className="px-4 py-2 rounded-xl font-semibold text-white bg-cyan-600 bg-opacity-50 hover:bg-opacity-70 transition-all hover:scale-105 flex items-center gap-2 border border-cyan-400 border-opacity-30"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Attendance
+                            </button>
+                            <button
+                                onClick={() => navigate('/admin/leaves')}
+                                className="px-4 py-2 rounded-xl font-semibold text-white bg-purple-600 bg-opacity-50 hover:bg-opacity-70 transition-all hover:scale-105 flex items-center gap-2 border border-purple-400 border-opacity-30"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Leave Management
+                            </button>
+                            <button
                                 onClick={() => navigate('/admin/analytics')}
                                 className="px-4 py-2 rounded-xl font-semibold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 transition-all hover:scale-105 flex items-center gap-2 shadow-lg"
                             >
@@ -303,6 +362,17 @@ export const AdminDashboard: React.FC = () => {
                                 </svg>
                                 Advanced Search
                             </button>
+                            {isSearchActive && (
+                                <button
+                                    onClick={loadData}
+                                    className="px-4 py-2 rounded-xl font-semibold text-white bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 transition-all hover:scale-105 flex items-center gap-2 shadow-lg"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                    Clear Search
+                                </button>
+                            )}
                             <button
                                 onClick={() => setShowAnalytics(!showAnalytics)}
                                 className={`px-4 py-2 rounded-xl font-semibold transition-all hover:scale-105 flex items-center gap-2 shadow-lg ${showAnalytics ? 'bg-blue-600 text-white' : 'bg-white text-blue-600'}`}
@@ -330,10 +400,10 @@ export const AdminDashboard: React.FC = () => {
                 )}
 
                 {/* Stats Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 fade-in">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8 fade-in">
                     <StatCard
                         title="Total Complaints"
-                        value={stats.totalComplaints}
+                        value={complaints.length}
                         icon={
                             <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -344,8 +414,19 @@ export const AdminDashboard: React.FC = () => {
                         onClick={() => setShowAllComplaintsModal(true)}
                     />
                     <StatCard
+                        title="Unassigned"
+                        value={complaints.filter((c: any) => !c.assignedOfficer).length}
+                        icon={
+                            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        }
+                        gradient="from-red-500 to-red-600"
+                        onClick={() => setStatusFilter('UNASSIGNED')}
+                    />
+                    <StatCard
                         title="Pending"
-                        value={stats.pendingComplaints}
+                        value={complaints.filter((c: any) => c.status === 'PENDING').length}
                         icon={
                             <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -353,10 +434,11 @@ export const AdminDashboard: React.FC = () => {
                         }
                         gradient="from-yellow-500 to-orange-600"
                         trend={{ value: 5, isPositive: false }}
+                        onClick={() => setStatusFilter('PENDING')}
                     />
                     <StatCard
                         title="Resolved"
-                        value={stats.resolvedComplaints}
+                        value={complaints.filter((c: any) => c.status === 'RESOLVED').length}
                         icon={
                             <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -364,6 +446,7 @@ export const AdminDashboard: React.FC = () => {
                         }
                         gradient="from-green-500 to-emerald-600"
                         trend={{ value: 8, isPositive: true }}
+                        onClick={() => setStatusFilter('RESOLVED')}
                     />
                     <StatCard
                         title="Active Officers"
@@ -380,48 +463,72 @@ export const AdminDashboard: React.FC = () => {
 
                 {/* Complaints Table */}
                 <div className="modern-card overflow-hidden">
-                    <div className="mb-6">
-                        <h3 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
-                            {statusFilter === 'ALL' ? 'All Complaints' :
-                                statusFilter === 'UNASSIGNED' ? 'Unassigned Complaints' :
-                                    `${statusFilter.replace('_', ' ')} Complaints`}
-                        </h3>
-                        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-                            Showing {filteredComplaints.length} of {complaints.length} complaints
-                        </p>
+                    <div className="mb-6 flex justify-between items-center">
+                        <div>
+                            <h3 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+                                {statusFilter === 'ALL' ? 'All Complaints' :
+                                    statusFilter === 'UNASSIGNED' ? 'Unassigned Complaints' :
+                                        `${statusFilter.replace('_', ' ')} Complaints`}
+                            </h3>
+                            <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+                                Showing {paginatedComplaints.length} of {filteredComplaints.length} complaints
+                            </p>
+                        </div>
+                        {statusFilter !== 'ALL' && (
+                            <button
+                                onClick={clearFilters}
+                                className="px-3 py-1 text-sm font-medium text-red-600 hover:text-red-800 transition-colors"
+                            >
+                                Clear Filter
+                            </button>
+                        )}
                     </div>
 
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead>
                                 <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Complaint</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Status</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Urgency</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Assigned To</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Date</th>
+                                    {['title', 'status', 'urgency', 'assignedOfficer', 'createdAt'].map((field) => (
+                                        <th
+                                            key={field}
+                                            className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800"
+                                            style={{ color: 'var(--text-secondary)' }}
+                                            onClick={() => handleSort(field)}
+                                        >
+                                            <div className="flex items-center gap-1">
+                                                {field === 'title' ? 'Complaint' :
+                                                    field === 'assignedOfficer' ? 'Assigned To' :
+                                                        field === 'createdAt' ? 'Date' :
+                                                            field.charAt(0).toUpperCase() + field.slice(1)}
+                                                {sortField === field && (
+                                                    <svg className={`w-4 h-4 transform ${sortOrder === 'asc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                    </svg>
+                                                )}
+                                            </div>
+                                        </th>
+                                    ))}
                                     <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Action</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-[var(--border-color)]">
-                                {filteredComplaints.map((complaint: any) => (
+                                {paginatedComplaints.map((complaint: any) => (
                                     <tr
                                         key={complaint.id}
-                                        className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
-                                        onClick={() => setViewComplaint(complaint)}
+                                        className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors"
                                     >
-                                        <td className="px-6 py-4">
+                                        <td className="px-6 py-4 cursor-pointer" onClick={() => setViewComplaint(complaint)}>
                                             <div>
                                                 <div className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{complaint.title}</div>
                                                 <div className="text-xs mt-1 truncate max-w-xs" style={{ color: 'var(--text-secondary)' }}>{complaint.description}</div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4">
+                                        <td className="px-6 py-4 cursor-pointer" onClick={() => setViewComplaint(complaint)}>
                                             <span className={`badge badge-${complaint.status.toLowerCase().replace('_', '-')}`}>
                                                 {complaint.status}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4">
+                                        <td className="px-6 py-4 cursor-pointer" onClick={() => setViewComplaint(complaint)}>
                                             <span className={`px-2 py-1 rounded text-xs font-medium ${complaint.urgency === 'HIGH' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
                                                 complaint.urgency === 'MEDIUM' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400' :
                                                     'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400'
@@ -466,6 +573,33 @@ export const AdminDashboard: React.FC = () => {
                             </tbody>
                         </table>
                     </div>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                        <div className="flex justify-between items-center mt-4 pt-4 border-t" style={{ borderColor: 'var(--border-color)' }}>
+                            <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                                Page {currentPage} of {totalPages}
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                    className="px-3 py-1 rounded-lg text-sm font-medium disabled:opacity-50"
+                                    style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                                >
+                                    Previous
+                                </button>
+                                <button
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                    className="px-3 py-1 rounded-lg text-sm font-medium disabled:opacity-50"
+                                    style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        </div>
+                    )}
 
                     {filteredComplaints.length === 0 && (
                         <div className="text-center py-12">

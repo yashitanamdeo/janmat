@@ -190,13 +190,44 @@ export const OfficerDashboard: React.FC = () => {
                         <div className="absolute -top-20 -right-20 w-40 h-40 bg-white rounded-full blur-3xl"></div>
                         <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-white rounded-full blur-3xl"></div>
                     </div>
-                    <div className="relative z-10">
-                        <h2 className="text-3xl font-bold text-white mb-2">
-                            Welcome, Officer {user?.name?.split(' ')[0]}! 👮
-                        </h2>
-                        <p className="text-white text-opacity-90">
-                            Manage and resolve assigned complaints efficiently
-                        </p>
+                    <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <h2 className="text-3xl font-bold text-white mb-2">
+                                Welcome, Officer {user?.name?.split(' ')[0]}! 👮
+                            </h2>
+                            <p className="text-white text-opacity-90">
+                                Manage and resolve assigned complaints efficiently
+                            </p>
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => navigate('/officer/leaves')}
+                                className="px-4 py-2 rounded-xl font-semibold text-white bg-white bg-opacity-20 hover:bg-opacity-30 transition-all hover:scale-105 flex items-center gap-2 border border-white border-opacity-30"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Leave
+                            </button>
+                            <button
+                                onClick={() => navigate('/officer/attendance')}
+                                className="px-4 py-2 rounded-xl font-semibold text-white bg-white bg-opacity-20 hover:bg-opacity-30 transition-all hover:scale-105 flex items-center gap-2 border border-white border-opacity-30"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Attendance
+                            </button>
+                            <button
+                                onClick={loadComplaints}
+                                className="px-4 py-2 rounded-xl font-semibold text-pink-600 bg-white transition-all hover:scale-105 flex items-center gap-2 shadow-lg"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                Refresh
+                            </button>
+                        </div>
                     </div>
                 </div >
 

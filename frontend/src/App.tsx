@@ -11,6 +11,10 @@ import { DepartmentManagement } from './pages/DepartmentManagement';
 import { OfficerManagement } from './pages/OfficerManagement';
 import { FeedbackDashboard } from './pages/FeedbackDashboard';
 import { AnalyticsDashboard } from './pages/AnalyticsDashboard';
+import { AttendancePage } from './pages/AttendancePage';
+import { AdminAttendancePage } from './pages/AdminAttendancePage';
+import { OfficerLeavePage } from './pages/OfficerLeavePage';
+import { AdminLeavePage } from './pages/AdminLeavePage';
 import { Profile } from './pages/Profile';
 import { loginSuccess } from './store/slices/authSlice';
 import axios from 'axios';
@@ -51,7 +55,11 @@ const AppContent: React.FC = () => {
         <Route path="/admin/officers" element={<OfficerManagement />} />
         <Route path="/admin/feedback" element={<FeedbackDashboard />} />
         <Route path="/admin/analytics" element={<AnalyticsDashboard />} />
+        <Route path="/admin/attendance" element={<AdminAttendancePage />} />
+        <Route path="/admin/leaves" element={<AdminLeavePage />} />
         <Route path="/officer" element={<OfficerDashboard />} />
+        <Route path="/officer/attendance" element={<AttendancePage />} />
+        <Route path="/officer/leaves" element={<OfficerLeavePage />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>

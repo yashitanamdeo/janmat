@@ -57,11 +57,32 @@ export class AdminController {
                 name: true,
                 email: true,
                 phone: true,
-                department: true, // Include department info
+                departmentId: true,
+                department: {
+                    select: {
+                        id: true,
+                        name: true,
+                    }
+                },
+                assignedComplaints: {
+                    select: {
+                        status: true
+                    }
+                }
             },
         });
 
-        res.json(officers);
+        // Transform to include counts
+        const officersWithCounts = officers.map(officer => ({
+            ...officer,
+            _count: {
+                assignedComplaints: officer.assignedComplaints.length,
+                resolvedComplaints: officer.assignedComplaints.filter(c => c.status === 'RESOLVED').length
+            },
+            assignedComplaints: undefined
+        }));
+
+        res.json(officersWithCounts);
     });
 
     static assignComplaint = catchAsync(async (req: Request, res: Response) => {
@@ -96,12 +117,13 @@ export class AdminController {
             },
         });
 
-        // Send notification
+        // Send notification to officer
         await prisma.notification.create({
             data: {
                 userId: officerId,
-                message: `New complaint assigned: ${complaint.title}`,
-                type: 'INFO'
+                title: 'New Complaint Assigned',
+                message: `You have been assigned: ${complaint.title}`,
+                type: 'ASSIGNMENT'
             }
         });
 
@@ -497,5 +519,119 @@ export class AdminController {
         });
 
         doc.end();
+    });
+
+    static createOfficer = catchAsync(async (req: Request, res: Response) => {
+        const { name, email, phone, password, departmentId, designation } = req.body;
+
+        // Check if user already exists
+        const existingUser = await prisma.user.findFirst({
+            where: {
+                OR: [
+                    { email: email },
+                    { phone: phone }
+                ]
+            }
+        });
+
+        if (existingUser) {
+            return res.status(400).json({ message: 'User with this email or phone already exists' });
+        }
+
+        // Hash password
+        const bcrypt = require('bcryptjs');
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Create officer
+        const officer = await prisma.user.create({
+            data: {
+                name,
+                email,
+                phone,
+                password: hashedPassword,
+                role: 'OFFICER',
+                departmentId,
+                designation,
+                isVerified: true, // Auto-verify officers created by admin
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+                role: true,
+                departmentId: true,
+                designation: true,
+                department: {
+                    select: {
+                        id: true,
+                        name: true,
+                    }
+                }
+            }
+        });
+
+        res.status(201).json(officer);
+    });
+
+    static updateOfficer = catchAsync(async (req: Request, res: Response) => {
+        const { id } = req.params;
+        const { name, email, phone, departmentId, designation } = req.body;
+
+        // Check if officer exists
+        const existingOfficer = await prisma.user.findUnique({
+            where: { id }
+        });
+
+        if (!existingOfficer) {
+            return res.status(404).json({ message: 'Officer not found' });
+        }
+
+        // Update officer
+        const officer = await prisma.user.update({
+            where: { id },
+            data: {
+                name,
+                email,
+                phone,
+                departmentId,
+                designation,
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+                role: true,
+                departmentId: true,
+                designation: true,
+                department: {
+                    select: {
+                        id: true,
+                        name: true,
+                    }
+                }
+            }
+        });
+
+        res.json(officer);
+    });
+
+    static getDepartments = catchAsync(async (req: Request, res: Response) => {
+        const departments = await prisma.department.findMany({
+            include: {
+                _count: {
+                    select: {
+                        officers: true,
+                        complaints: true,
+                    },
+                },
+            },
+            orderBy: {
+                name: 'asc',
+            },
+        });
+
+        res.json(departments);
     });
 }

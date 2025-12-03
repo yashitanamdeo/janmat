@@ -21,6 +21,12 @@ model User {
   password  String
   role      Role     @default(CITIZEN)
   dateOfBirth DateTime? // For age validation
+  gender    String?   // MALE, FEMALE, OTHER
+  address   String?
+  profilePicture String? // URL to profile image
+  emergencyContact String? // Emergency contact number
+  aadharNumber String? // Optional Aadhar number
+  designation String? // For officers: designation/rank
   isVerified Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -30,8 +36,72 @@ model User {
   feedbacks Feedback[]
   department Department? @relation(fields: [departmentId], references: [id])
   departmentId String?
+  attendance Attendance[]
+  leaves Leave[]
 
   @@map("users")
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LEAVE
+  LATE
+  HALF_DAY
+}
+
+model Attendance {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  date      DateTime @default(now())
+  status    AttendanceStatus
+  checkIn   DateTime?
+  checkOut  DateTime?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("attendance")
+  @@index([userId, date])
+}
+
+enum LeaveType {
+  SICK
+  CASUAL
+  EARNED
+  MATERNITY
+  PATERNITY
+  UNPAID
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Leave {
+  id          String      @id @default(uuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  type        LeaveType
+  status      LeaveStatus @default(PENDING)
+  startDate   DateTime
+  endDate     DateTime
+  reason      String
+  days        Int
+  approvedBy  String?
+  approvedAt  DateTime?
+  rejectedBy  String?
+  rejectedAt  DateTime?
+  comments    String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("leaves")
+  @@index([userId, status])
+  @@index([status, startDate])
 }
 
 enum Urgency {
@@ -126,10 +196,15 @@ model Notification {
   id        String   @id @default(uuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
-  message   String
-  type      String   // INFO, WARNING, SUCCESS, ERROR
+  title     String?  // Short title for the notification (nullable for backward compatibility)
+  message   String   // Detailed message
+  type      String   // INFO, WARNING, SUCCESS, ERROR, COMPLAINT, ASSIGNMENT, STATUS, FEEDBACK, REMINDER, LEAVE, ATTENDANCE
   read      Boolean  @default(false)
+  actionUrl String?  // Optional URL to navigate when clicked
+  metadata  Json?    // Additional data (complaintId, officerId, etc.)
   createdAt DateTime @default(now())
 
   @@map("notifications")
+  @@index([userId, read])
+  @@index([createdAt])
 }

@@ -143,7 +143,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect
 
                 {/* Search Results Dropdown */}
                 {searchResults.length > 0 && (
-                    <div className="absolute z-50 w-full mt-2 rounded-xl shadow-2xl overflow-hidden border-2 animate-fade-in" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
+                    <div className="absolute z-[1000] w-full mt-2 rounded-xl shadow-2xl overflow-hidden border-2 animate-fade-in max-h-64 overflow-y-auto" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
                         {searchResults.map((result) => (
                             <button
                                 key={result.place_id}
