@@ -32,6 +32,10 @@ Follow these exact steps to deploy your JanMat project for FREE.
 7. **Copy this URL** (you'll need it):
    ```
    postgresql://neondb_owner:YOUR_PASSWORD@ep-xxxxx.neon.tech/neondb
+
+   postgresql://neondb_owner:npg_sZ3VUc6RbDxw@ep-ancient-cake-a44qvnrk-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+
+   psql 'postgresql://neondb_owner:npg_sZ3VUc6RbDxw@ep-ancient-cake-a44qvnrk-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require'
    ```
    Keep this safe ✅
 
@@ -55,6 +59,10 @@ Follow these exact steps to deploy your JanMat project for FREE.
 7. **Copy Redis URL:**
    ```
    redis://default:YOUR_PASSWORD@xxxx.upstash.io:12345
+
+
+   rediss://default:AV9WAAIncDIxMDI5OGM1NTJmNDQ0MzA0OWVjNGQ5ZGQ0MzNiNmUyY3AyMjQ0MDY@tender-flea-24406.upstash.io:6379
+
    ```
    Keep this safe ✅
 
@@ -80,6 +88,8 @@ Follow these exact steps to deploy your JanMat project for FREE.
 9. **Copy AMQP URL:**
    ```
    amqps://username:password@xxx.cloudamqp.com/vhost
+
+   amqps://fhwtttdn:7e8GCN6f07x_gsO1DPdzWvyewKPiHw6q@possum.lmq.cloudamqp.com/fhwtttdn
    ```
    Keep this safe ✅
 
@@ -131,7 +141,7 @@ Keep this safe ✅
    - **Environment:** Node
    - **Region:** Frankfurt (or closest)
    - **Branch:** janmat
-   - **Build Command:** `npm install && npm run build && npx prisma migrate deploy`
+   - **Build Command:** `npm install --include=dev && npm run build`
    - **Start Command:** `npm start`
    - **Instance Type:** Free
 

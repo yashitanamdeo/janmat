@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node src/server.ts",
+    "start": "node -e \"require('child_process').execSync('npx prisma migrate deploy', {stdio: 'inherit'}); require('child_process').execSync('node dist/server.js', {stdio: 'inherit'})\"",
     "dev": "ts-node src/server.ts",
     "build": "tsc",
     "docs:json": "node scripts/generate-docs.js --json",
