@@ -37,10 +37,10 @@
     "socket.io": "^4.8.1",
     "swagger-ui-dist": "^4.15.5",
     "swagger-ui-express": "^4.6.3",
-    "zod": "^4.1.12"
+    "zod": "^4.1.12",
+    "@prisma/client": "^5.22.0"
   },
   "devDependencies": {
-    "@prisma/client": "^5.22.0",
     "@types/amqplib": "^0.10.8",
     "@types/bcryptjs": "^3.0.0",
     "@types/cors": "^2.8.19",
