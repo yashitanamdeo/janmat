@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JanMat API Documentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #ffffff;
+      color: #1a202c;
+      line-height: 1.6;
+    }
+    .container { display: flex; height: 100vh; }
+    
+    /* LEFT SIDEBAR - Navigation */
+    .sidebar {
+      width: 280px;
+      background: #f8fafc;
+      border-right: 1px solid #e2e8f0;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    .sidebar-header {
+      padding: 20px 16px;
+      border-bottom: 1px solid #e2e8f0;
+      background: linear-gradient(135deg, #0369a1 0%, #0ea5e9 100%);
+      color: white;
+    }
+    .sidebar-header h1 { font-size: 18px; font-weight: 700; margin: 0; }
+    .sidebar-header p { font-size: 12px; opacity: 0.9; margin-top: 4px; }
+    .sidebar-search {
+      padding: 12px 16px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .sidebar-search input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+    }
+    .sidebar-search input:focus { outline: none; border-color: #0ea5e9; box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1); }
+    .sidebar-content { padding: 16px 0; }
+    .sidebar-group {
+      margin-bottom: 0;
+    }
+    .sidebar-group-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748b;
+      padding: 12px 16px 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .sidebar-item {
+      display: block;
+      padding: 10px 16px;
+      color: #475569;
+      text-decoration: none;
+      font-size: 13px;
+      border-left: 3px solid transparent;
+      transition: all 0.2s ease;
+    }
+    .sidebar-item:hover {
+      background: rgba(14, 165, 233, 0.1);
+      color: #0369a1;
+      border-left-color: #0ea5e9;
+    }
+    .sidebar-item.active {
+      background: rgba(14, 165, 233, 0.15);
+      color: #0369a1;
+      border-left-color: #0369a1;
+      font-weight: 600;
+    }
+    .method-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 3px;
+      margin-right: 6px;
+      text-transform: uppercase;
+    }
+    .method-get { background: #dbeafe; color: #0369a1; }
+    .method-post { background: #dcfce7; color: #166534; }
+    .method-put { background: #fed7aa; color: #92400e; }
+    .method-patch { background: #fce7f3; color: #831843; }
+    .method-delete { background: #fee2e2; color: #991b1b; }
+
+    /* CENTER CONTENT - Main Documentation */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: white;
+    }
+    .content-header {
+      padding: 24px;
+      border-bottom: 1px solid #e2e8f0;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    }
+    .content-header h2 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .content-header p {
+      font-size: 14px;
+      color: #64748b;
+      margin-bottom: 0;
+    }
+    .content-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+    }
+    .endpoint-info h3 { font-size: 14px; font-weight: 700; color: #1e293b; margin-bottom: 12px; margin-top: 20px; }
+    .endpoint-info h3:first-child { margin-top: 0; }
+    .param-table {
+      width: 100%;
+      font-size: 12px;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+    }
+    .param-table thead {
+      background: #f1f5f9;
+      border-bottom: 1px solid #cbd5e1;
+    }
+    .param-table th {
+      padding: 8px 12px;
+      text-align: left;
+      font-weight: 600;
+      color: #475569;
+    }
+    .param-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .param-table tr:hover { background: #f8fafc; }
+    .param-name { font-family: 'Monaco', 'Courier New', monospace; color: #0369a1; font-weight: 600; }
+    .param-type { color: #64748b; font-size: 11px; }
+    .param-desc { color: #64748b; line-height: 1.4; }
+    .required-badge {
+      display: inline-block;
+      font-size: 10px;
+      background: #fee2e2;
+      color: #991b1b;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-weight: 600;
+      margin-left: 4px;
+    }
+    .optional-badge {
+      display: inline-block;
+      font-size: 10px;
+      background: #f0fdf4;
+      color: #15803d;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-weight: 600;
+      margin-left: 4px;
+    }
+    .token-input-section {
+      margin-bottom: 24px;
+      padding: 16px;
+      background: #fef3c7;
+      border: 1px solid #fcd34d;
+      border-radius: 8px;
+    }
+    .token-input-section label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #92400e;
+      margin-bottom: 8px;
+    }
+    .token-input-section input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #fcd34d;
+      border-radius: 4px;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 12px;
+    }
+    .token-input-section input:focus {
+      outline: none;
+      border-color: #f59e0b;
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+    }
+
+    /* RIGHT SIDEBAR - Code Examples */
+    .code-panel {
+      width: 380px;
+      background: #0f172a;
+      color: #e2e8f0;
+      overflow-y: auto;
+      flex-shrink: 0;
+      border-left: 1px solid #e2e8f0;
+    }
+    .code-section {
+      padding: 20px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .code-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .code-block {
+      position: relative;
+      background: #1e293b;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .code-block code {
+      display: block;
+      padding: 12px;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 11px;
+      line-height: 1.5;
+      color: #e2e8f0;
+      overflow-x: auto;
+      word-break: break-all;
+      white-space: pre-wrap;
+    }
+    .code-copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      background: rgba(14, 165, 233, 0.1);
+      color: #0ea5e9;
+      border: 1px solid #0ea5e9;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+    .code-copy-btn:hover {
+      background: #0ea5e9;
+      color: white;
+    }
+    .code-copy-btn.copied { background: #22c55e; color: white; border-color: #22c55e; }
+
+    /* Responsive adjustments */
+    @media (max-width: 1400px) {
+      .code-panel { width: 320px; }
+      .content-body { gap: 30px; }
+    }
+    @media (max-width: 1200px) {
+      .content-body { grid-template-columns: 1fr; }
+      .code-panel { display: none; }
+    }
+    @media (max-width: 768px) {
+      .sidebar { width: 200px; }
+      .content-body { padding: 16px; }
+    }
+
+    /* Syntax highlighting */
+    .hljs { background: transparent !important; padding: 0 !important; }
+    .hljs-literal, .hljs-number { color: #13b0f5; }
+    .hljs-string { color: #24b47e; }
+    .hljs-attr { color: #00d4ff; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- LEFT SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h1>JanMat API</h1>
+        <p>Interactive Documentation</p>
+      </div>
+      <div class="sidebar-search">
+        <input type="text" id="search" placeholder="Search endpoints...">
+      </div>
+      <div class="sidebar-content" id="sidebar-nav">
+        <!-- Dynamically populated -->
+      </div>
+    </div>
+
+    <!-- CENTER CONTENT -->
+    <div class="main-content">
+      <div class="content-header">
+        <h2 id="endpoint-title">Welcome to JanMat API</h2>
+        <p id="endpoint-desc">Select an endpoint from the left sidebar to get started</p>
+      </div>
+      <div class="content-body">
+        <div class="endpoint-info">
+          <div class="token-input-section">
+            <label for="auth-token">Bearer Token (JWT)</label>
+            <input type="password" id="auth-token" placeholder="Paste your JWT token here...">
+          </div>
+          <div id="endpoint-details">
+            <p style="color: #64748b;">Select an endpoint to see parameters, authentication requirements, and request/response details.</p>
+          </div>
+        </div>
+        <div id="code-examples" style="display: none;">
+          <!-- Code panel on desktop, placeholder on mobile -->
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT CODE PANEL -->
+    <div class="code-panel">
+      <div class="code-section">
+        <div class="code-section-title">Example cURL</div>
+        <div class="code-block" id="curl-block">
+          <button class="code-copy-btn" id="curl-copy">Copy</button>
+          <code id="curl-code">curl https://api.example.com</code>
+        </div>
+      </div>
+      <div class="code-section">
+        <div class="code-section-title">Example Response</div>
+        <div class="code-block" id="response-block">
+          <button class="code-copy-btn" id="response-copy">Copy</button>
+          <code id="response-code">{ "status": "success" }</code>
+        </div>
+      </div>
+      <div class="code-section">
+        <div class="code-section-title">Metadata</div>
+        <div style="font-size: 12px; line-height: 1.8;">
+          <div><span style="color: #94a3b8;">Status:</span> <span id="meta-status">200</span></div>
+          <div><span style="color: #94a3b8;">Content-Type:</span> <span id="meta-content-type">application/json</span></div>
+          <div><span style="color: #94a3b8;">Auth Required:</span> <span id="meta-auth">Yes</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const endpoints = {
+      'Authentication': [
+        { id: 'auth-register', method: 'POST', path: '/auth/register', title: 'Register New User', description: 'Create a new user account with email and password' },
+        { id: 'auth-login', method: 'POST', path: '/auth/login', title: 'Login User', description: 'Authenticate user and receive JWT token' },
+        { id: 'auth-logout', method: 'POST', path: '/auth/logout', title: 'Logout User', description: 'Invalidate current session and JWT token' },
+        { id: 'auth-profile', method: 'GET', path: '/auth/profile', title: 'Get User Profile', description: 'Retrieve current authenticated user profile information' },
+      ],
+      'Complaints': [
+        { id: 'complaint-create', method: 'POST', path: '/complaints', title: 'Create Complaint', description: 'File a new complaint about infrastructure issues' },
+        { id: 'complaint-list', method: 'GET', path: '/complaints', title: 'List Complaints', description: 'Retrieve all complaints with pagination and filtering' },
+        { id: 'complaint-get', method: 'GET', path: '/complaints/{id}', title: 'Get Complaint Details', description: 'Retrieve detailed information about a specific complaint' },
+        { id: 'complaint-update', method: 'PUT', path: '/complaints/{id}', title: 'Update Complaint', description: 'Update complaint status, priority, or details' },
+      ],
+      'Departments': [
+        { id: 'dept-list', method: 'GET', path: '/departments', title: 'List Departments', description: 'Retrieve all departments managing complaints' },
+        { id: 'dept-get', method: 'GET', path: '/departments/{id}', title: 'Get Department', description: 'Get specific department information and officers' },
+      ],
+      'Feedback': [
+        { id: 'feedback-submit', method: 'POST', path: '/feedback', title: 'Submit Feedback', description: 'Submit feedback about complaint resolution' },
+        { id: 'feedback-list', method: 'GET', path: '/feedback', title: 'List Feedback', description: 'Retrieve all feedback submissions' },
+      ],
+      'Notifications': [
+        { id: 'notif-list', method: 'GET', path: '/notifications', title: 'List Notifications', description: 'Retrieve user notifications and alerts' },
+        { id: 'notif-read', method: 'PUT', path: '/notifications/{id}', title: 'Mark as Read', description: 'Mark notification as read' },
+      ],
+      'Admin': [
+        { id: 'admin-assign', method: 'POST', path: '/admin/complaints/assign', title: 'Assign Complaint', description: 'Assign complaint to officer' },
+        { id: 'admin-officers', method: 'GET', path: '/admin/officers', title: 'List Officers', description: 'Get all complaint handling officers' },
+      ],
+      'Analytics': [
+        { id: 'analytics-dashboard', method: 'GET', path: '/analytics/dashboard', title: 'Dashboard Stats', description: 'Get complaint statistics and metrics' },
+        { id: 'analytics-trends', method: 'GET', path: '/analytics/trends', title: 'Trends Report', description: 'Get complaint trends over time' },
+      ]
+    };
+
+    const endpointDetails = {
+      'auth-register': {
+        description: 'Register a new user account',
+        params: [
+          { name: 'email', type: 'string', required: true, description: 'User email address' },
+          { name: 'password', type: 'string', required: true, description: 'User password (min 8 chars)' },
+          { name: 'name', type: 'string', required: true, description: 'Full name of user' },
+        ],
+        body: { email: 'ananya@example.com', password: 'SecurePass123', name: 'Ananya Sharma' },
+        response: { id: 'user123', email: 'ananya@example.com', name: 'Ananya Sharma', createdAt: '2024-11-30T10:30:00Z' },
+        auth: false,
+        status: 201
+      },
+      'auth-login': {
+        description: 'Authenticate and receive JWT token',
+        params: [
+          { name: 'email', type: 'string', required: true, description: 'User email address' },
+          { name: 'password', type: 'string', required: true, description: 'User password' },
+        ],
+        body: { email: 'ananya@example.com', password: 'SecurePass123' },
+        response: { token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...', user: { id: 'user123', email: 'ananya@example.com', role: 'citizen' } },
+        auth: false,
+        status: 200
+      },
+      'auth-profile': {
+        description: 'Get authenticated user profile',
+        params: [],
+        response: { id: 'user123', email: 'ananya@example.com', name: 'Ananya Sharma', role: 'citizen', createdAt: '2024-11-30T10:30:00Z' },
+        auth: true,
+        status: 200
+      },
+      'complaint-create': {
+        description: 'File a new complaint',
+        params: [
+          { name: 'title', type: 'string', required: true, description: 'Complaint title' },
+          { name: 'description', type: 'string', required: true, description: 'Detailed description' },
+          { name: 'location', type: 'string', required: true, description: 'GPS coordinates or address' },
+          { name: 'category', type: 'string', required: true, description: 'pothole|flood|streetlight|traffic' },
+          { name: 'attachments', type: 'array', required: false, description: 'Image URLs' },
+        ],
+        body: {
+          title: 'Pothole on Main Street',
+          description: 'Large pothole near traffic light affecting vehicles',
+          location: '40.7128,-74.0060',
+          category: 'pothole',
+          attachments: ['https://cdn.example.com/img1.jpg']
+        },
+        response: { id: 'complaint456', title: 'Pothole on Main Street', status: 'pending', createdAt: '2024-11-30T10:30:00Z' },
+        auth: true,
+        status: 201
+      },
+      'complaint-list': {
+        description: 'Retrieve all complaints',
+        params: [
+          { name: 'status', type: 'string', required: false, description: 'Filter: pending|assigned|resolved' },
+          { name: 'category', type: 'string', required: false, description: 'Filter by category' },
+          { name: 'limit', type: 'integer', required: false, description: 'Results per page (default: 10)' },
+          { name: 'offset', type: 'integer', required: false, description: 'Pagination offset' },
+        ],
+        response: { complaints: [{ id: 'c1', title: 'Pothole on Main', status: 'pending' }], total: 42, limit: 10, offset: 0 },
+        auth: true,
+        status: 200
+      },
+      'complaint-get': {
+        description: 'Get single complaint details',
+        params: [
+          { name: 'id', type: 'string', required: true, description: 'Complaint ID (path parameter)' },
+        ],
+        response: { id: 'complaint456', title: 'Pothole on Main Street', status: 'assigned', assignedTo: 'officer123', createdAt: '2024-11-30T10:30:00Z', history: [] },
+        auth: true,
+        status: 200
+      },
+      'feedback-submit': {
+        description: 'Submit feedback about complaint resolution',
+        params: [
+          { name: 'complaintId', type: 'string', required: true, description: 'Complaint ID' },
+          { name: 'rating', type: 'integer', required: true, description: '1-5 stars' },
+          { name: 'comment', type: 'string', required: false, description: 'Feedback text' },
+        ],
+        body: { complaintId: 'complaint456', rating: 4, comment: 'Well resolved, quick response' },
+        response: { id: 'feedback789', complaintId: 'complaint456', rating: 4, createdAt: '2024-11-30T10:30:00Z' },
+        auth: true,
+        status: 201
+      },
+      'admin-assign': {
+        description: 'Assign complaint to officer',
+        params: [
+          { name: 'complaintId', type: 'string', required: true, description: 'Complaint to assign' },
+          { name: 'officerId', type: 'string', required: true, description: 'Officer to assign to' },
+        ],
+        body: { complaintId: 'complaint456', officerId: 'officer123' },
+        response: { success: true, assignment: { complaintId: 'complaint456', assignedTo: 'officer123', assignedAt: '2024-11-30T10:30:00Z' } },
+        auth: true,
+        status: 200
+      },
+      'dept-list': {
+        description: 'List all departments',
+        params: [],
+        response: { departments: [{ id: 'dept1', name: 'Public Works', officers: 5 }, { id: 'dept2', name: 'Traffic Management', officers: 3 }] },
+        auth: true,
+        status: 200
+      },
+      'analytics-dashboard': {
+        description: 'Get dashboard statistics',
+        params: [],
+        response: { totalComplaints: 250, resolved: 180, pending: 40, assigned: 30, avgResolutionTime: '3.2 days' },
+        auth: true,
+        status: 200
+      },
+    };
+
+    let currentEndpoint = null;
+    let spec = null;
+
+    // Load OpenAPI spec
+    async function loadSpec() {
+      try {
+        const res = await fetch('/docs/openapi.json');
+        spec = await res.json();
+      } catch (e) {
+        console.error('Failed to load OpenAPI spec:', e);
+      }
+    }
+
+    // Build sidebar navigation
+    function buildSidebar() {
+      const nav = document.getElementById('sidebar-nav');
+      nav.innerHTML = '';
+      Object.entries(endpoints).forEach(([group, items]) => {
+        const groupDiv = document.createElement('div');
+        groupDiv.className = 'sidebar-group';
+        
+        const title = document.createElement('div');
+        title.className = 'sidebar-group-title';
+        title.textContent = group;
+        groupDiv.appendChild(title);
+
+        items.forEach(item => {
+          const link = document.createElement('a');
+          link.className = 'sidebar-item';
+          link.href = '#';
+          link.dataset.id = item.id;
+          
+          const badge = document.createElement('span');
+          badge.className = `method-badge method-${item.method.toLowerCase()}`;
+          badge.textContent = item.method;
+          
+          link.appendChild(badge);
+          link.appendChild(document.createTextNode(item.title));
+          
+          link.addEventListener('click', (e) => {
+            e.preventDefault();
+            showEndpoint(item.id, item);
+          });
+          
+          groupDiv.appendChild(link);
+        });
+        
+        nav.appendChild(groupDiv);
+      });
+    }
+
+    // Show endpoint details
+    function showEndpoint(id, item) {
+      currentEndpoint = id;
+      const details = endpointDetails[id] || {};
+
+      // Update header
+      document.getElementById('endpoint-title').textContent = item.title;
+      document.getElementById('endpoint-desc').textContent = item.description;
+
+      // Build parameters table
+      let paramsHTML = '';
+      if (details.params && details.params.length > 0) {
+        paramsHTML = `
+          <h3>Parameters</h3>
+          <table class="param-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${details.params.map(p => `
+                <tr>
+                  <td><span class="param-name">${p.name}</span> ${p.required ? '<span class="required-badge">Required</span>' : '<span class="optional-badge">Optional</span>'}</td>
+                  <td><span class="param-type">${p.type}</span></td>
+                  <td><span class="param-desc">${p.description}</span></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+
+      let authHTML = `<h3>Authentication</h3><p style="font-size: 13px; color: #64748b;">${details.auth ? 'Requires Bearer token in Authorization header' : 'No authentication required'}</p>`;
+
+      document.getElementById('endpoint-details').innerHTML = paramsHTML + authHTML;
+
+      // Update code panel
+      updateCodePanel(item, details);
+
+      // Update metadata
+      document.getElementById('meta-status').textContent = details.status || 200;
+      document.getElementById('meta-auth').textContent = details.auth ? 'Yes' : 'No';
+
+      // Update sidebar active state
+      document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+      document.querySelector(`[data-id="${id}"]`)?.classList.add('active');
+    }
+
+    // Update code panel
+    function updateCodePanel(item, details) {
+      const base = window.location.origin.replace(/\/$/, '');
+      let url = base + '/api' + item.path;
+
+      // Replace path parameters with examples
+      const pathParams = details.params?.filter(p => item.path.includes(`{${p.name}}`)) || [];
+      pathParams.forEach(p => {
+        url = url.replace(`{${p.name}}`, 'EXAMPLE_ID');
+      });
+
+      const token = localStorage.getItem('janmat_auth') || '<JWT_TOKEN>';
+      let curl = `curl -X ${item.method} '${url}'`;
+      curl += ` \\\n  -H 'Content-Type: application/json'`;
+      if (details.auth) {
+        curl += ` \\\n  -H 'Authorization: Bearer ${token}'`;
+      }
+      if (details.body) {
+        curl += ` \\\n  -d '${JSON.stringify(details.body, null, 2).replace(/'/g, "'\\''")}'`;
+      }
+
+      document.getElementById('curl-code').textContent = curl;
+      document.getElementById('response-code').textContent = JSON.stringify(details.response || {}, null, 2);
+
+      // Syntax highlight
+      hljs.highlightElement(document.getElementById('curl-code'));
+      hljs.highlightElement(document.getElementById('response-code'));
+    }
+
+    // Copy to clipboard buttons
+    document.getElementById('curl-copy').addEventListener('click', async () => {
+      const btn = document.getElementById('curl-copy');
+      const text = document.getElementById('curl-code').textContent;
+      await navigator.clipboard.writeText(text);
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+
+    document.getElementById('response-copy').addEventListener('click', async () => {
+      const btn = document.getElementById('response-copy');
+      const text = document.getElementById('response-code').textContent;
+      await navigator.clipboard.writeText(text);
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+
+    // Token persistence
+    const tokenInput = document.getElementById('auth-token');
+    tokenInput.value = localStorage.getItem('janmat_auth') || '';
+    tokenInput.addEventListener('change', () => {
+      localStorage.setItem('janmat_auth', tokenInput.value);
+    });
+
+    // Search functionality
+    document.getElementById('search').addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      document.querySelectorAll('.sidebar-item').forEach(item => {
+        const text = item.textContent.toLowerCase();
+        item.style.display = text.includes(query) ? '' : 'none';
+      });
+    });
+
+    // Initialize
+    loadSpec().then(() => {
+      buildSidebar();
+      // Show first endpoint by default
+      const firstEndpointId = Object.values(endpoints)[0][0].id;
+      const firstEndpoint = Object.values(endpoints)[0][0];
+      showEndpoint(firstEndpointId, firstEndpoint);
+    });
+  </script>
+</body>
+</html>

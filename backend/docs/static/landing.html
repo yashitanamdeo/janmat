@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>JanMat API — User Guide</title>
+    <style>
+      body{font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; margin:0; color:#222}
+      header{background:#0f172a;color:#fff;padding:20px}
+      .container{display:grid;grid-template-columns:360px 1fr;min-height:calc(100vh - 72px)}
+      nav{padding:20px;border-right:1px solid #e6e9ef}
+      nav h3{margin-top:0}
+      nav a{display:block;padding:8px 6px;color:#0b3; text-decoration:none}
+      main{padding:20px}
+      .cta{margin:12px 0}
+      .buttons a{display:inline-block;margin-right:8px;padding:8px 12px;background:#0369a1;color:#fff;border-radius:6px;text-decoration:none}
+      .note{background:#f1f5f9;border-left:4px solid #60a5fa;padding:12px;margin:12px 0}
+      iframe{width:100%;height:80vh;border:0}
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1 style="margin:0">JanMat API — Friendly Documentation</h1>
+      <div style="font-size:14px;margin-top:6px;opacity:0.9">Clear, example-driven API docs for citizens, officers and admins.</div>
+    </header>
+
+    <div class="container">
+      <nav>
+        <h3>Quick Start</h3>
+        <p>Use the buttons to open the interactive API explorer, download the spec, or view example flows below.</p>
+        <div class="buttons cta">
+          <a href="/docs" target="_blank">Open Documentation</a>
+          <a href="/docs/openapi.json" target="_blank">Download OpenAPI JSON</a>
+          <a href="/docs/janmat-api-docs.pdf" target="_blank">Download PDF</a>
+        </div>
+
+        <h3>Audience</h3>
+        <p>This guide helps three personas:</p>
+        <ul>
+          <li><strong>Citizen</strong> — report issues, see status, give feedback</li>
+          <li><strong>Officer</strong> — view assigned complaints, update status</li>
+          <li><strong>Admin</strong> — assign complaints, manage departments and download reports</li>
+        </ul>
+
+        <h3>Sections</h3>
+        <a href="#auth">Authentication</a>
+        <a href="#complaints">Complaints</a>
+        <a href="#departments">Departments</a>
+        <a href="#feedback">Feedback</a>
+        <a href="#admin">Admin</a>
+
+        <h3>Support</h3>
+        <p>Contact: <a href="mailto:support@example.com">support@example.com</a></p>
+      </nav>
+
+      <main>
+        <section id="intro">
+          <h2>Welcome</h2>
+          <p>This documentation explains why each API exists, the headers you need, example request payloads, and example responses. Click "Interactive Explorer" to try requests (you can paste a JWT into the Authorization input).</p>
+        </section>
+
+        <section id="auth">
+          <h2>Authentication</h2>
+          <p><strong>Why</strong>: Users must create an account and authenticate to perform actions like creating complaints and submitting feedback.</p>
+          <h4>Register</h4>
+          <p><strong>Endpoint:</strong> <code>POST /api/auth/register</code></p>
+          <p><strong>Headers</strong>: <code>Content-Type: application/json</code></p>
+          <p><strong>Example payload</strong>:</p>
+          <pre>{
+  "name": "Ananya Sharma",
+  "email": "ananya@example.com",
+  "phone": "+919876543210",
+  "password": "Password123!"
+}</pre>
+          <p><strong>Example response</strong> (201):</p>
+          <pre>{
+  "token": "<JWT_TOKEN>",
+  "user": { "id": "user_abc123", "name": "Ananya Sharma", "email": "ananya@example.com" }
+}</pre>
+        </section>
+
+        <section id="complaints">
+          <h2>Complaints</h2>
+          <p><strong>Why</strong>: Citizens report civic issues (e.g., potholes). Officers resolve them.</p>
+          <h4>Create a complaint</h4>
+          <p><strong>Endpoint:</strong> <code>POST /api/complaints</code> (multipart/form-data allowed for photos)</p>
+          <p><strong>Headers</strong>: <code>Authorization: Bearer &lt;TOKEN&gt;</code></p>
+          <p><strong>Example fields</strong>:</p>
+          <pre>title= Pothole on Main St
+description= A large pothole outside market entrance
+urgency= MEDIUM
+location= Main Street, Sector 5
+files= [photo1.jpg]</pre>
+
+          <h4>Example response</h4>
+          <pre>{
+  "id": "comp_123abc",
+  "title": "Pothole on Main Street near Market",
+  "status": "PENDING",
+  "createdAt": "2025-11-30T08:45:00.000Z"
+}</pre>
+
+        </section>
+
+        <section id="departments">
+          <h2>Departments</h2>
+          <p>Departments group related complaints (e.g., Roads, Sanitation). Admins manage them.</p>
+        </section>
+
+        <section id="feedback">
+          <h2>Feedback</h2>
+          <p>Citizens can provide ratings and comments after their complaint is resolved.</p>
+        </section>
+
+        <section id="admin">
+          <h2>Admin</h2>
+          <p>Admins can assign complaints, reassign officers, and download reports (CSV/PDF).</p>
+        </section>
+
+        <div class="note">
+          <strong>Try it:</strong> open the <a href="/docs/ui" target="_blank">Interactive Explorer</a>, paste a JWT into the Authorization input, and press "Try it" for any endpoint. Use the "Copy cURL" buttons to copy request commands.
+        </div>
+
+        <h3>Open the interactive docs</h3>
+        <iframe src="/docs/ui" title="Interactive API Explorer"></iframe>
+
+      </main>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,216 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CITIZEN
+  ADMIN
+  OFFICER
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String?  @unique
+  phone     String?  @unique
+  password  String?  // Made optional for OAuth users
+  role      Role     @default(CITIZEN)
+  dateOfBirth DateTime? // For age validation
+  gender    String?   // MALE, FEMALE, OTHER
+  address   String?
+  profilePicture String? // URL to profile image
+  emergencyContact String? // Emergency contact number
+  aadharNumber String? // Optional Aadhar number
+  designation String? // For officers: designation/rank
+  isVerified Boolean @default(false)
+  
+  // OAuth fields
+  provider  String? @default("LOCAL") // GOOGLE, FACEBOOK, APPLE, LOCAL
+  providerId String? // OAuth provider's user ID
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  complaints Complaint[]
+  assignedComplaints Complaint[] @relation("AssignedOfficer")
+  notifications Notification[]
+  feedbacks Feedback[]
+  department Department? @relation(fields: [departmentId], references: [id])
+  departmentId String?
+  attendance Attendance[]
+  leaves Leave[]
+
+  @@unique([provider, providerId])
+  @@map("users")
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LEAVE
+  LATE
+  HALF_DAY
+}
+
+model Attendance {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  date      DateTime @default(now())
+  status    AttendanceStatus
+  checkIn   DateTime?
+  checkOut  DateTime?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("attendance")
+  @@index([userId, date])
+}
+
+enum LeaveType {
+  SICK
+  CASUAL
+  EARNED
+  MATERNITY
+  PATERNITY
+  UNPAID
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Leave {
+  id          String      @id @default(uuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  type        LeaveType
+  status      LeaveStatus @default(PENDING)
+  startDate   DateTime
+  endDate     DateTime
+  reason      String
+  days        Int
+  approvedBy  String?
+  approvedAt  DateTime?
+  rejectedBy  String?
+  rejectedAt  DateTime?
+  comments    String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("leaves")
+  @@index([userId, status])
+  @@index([status, startDate])
+}
+
+enum Urgency {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum Status {
+  PENDING
+  IN_PROGRESS
+  RESOLVED
+  REJECTED
+}
+
+model Department {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  officers    User[]
+  complaints  Complaint[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("departments")
+}
+
+model Complaint {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  category    String?  // Subcategory within department
+  urgency     Urgency  @default(LOW)
+  status      Status   @default(PENDING)
+  location    String?  // JSON string or address
+  latitude    Float?   // Location coordinates
+  longitude   Float?   // Location coordinates
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  assignedTo  String?
+  assignedOfficer User? @relation("AssignedOfficer", fields: [assignedTo], references: [id])
+  departmentId String?
+  department  Department? @relation(fields: [departmentId], references: [id])
+  attachments Attachment[]
+  timeline    ComplaintTimeline[]
+  feedback    Feedback?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  resolvedAt  DateTime? // Track resolution time
+
+  @@map("complaints")
+}
+
+model Attachment {
+  id          String   @id @default(uuid())
+  complaintId String
+  complaint   Complaint @relation(fields: [complaintId], references: [id])
+  url         String
+  type        String   // IMAGE, VIDEO
+  createdAt   DateTime @default(now())
+
+  @@map("attachments")
+}
+
+model ComplaintTimeline {
+  id          String   @id @default(uuid())
+  complaintId String
+  complaint   Complaint @relation(fields: [complaintId], references: [id])
+  status      Status
+  comment     String?
+  updatedBy   String?  // User ID or Name
+  timestamp   DateTime @default(now())
+
+  @@map("complaint_timeline")
+}
+
+model Feedback {
+  id          String   @id @default(uuid())
+  complaintId String   @unique
+  complaint   Complaint @relation(fields: [complaintId], references: [id])
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  rating      Int      // 1-5 stars
+  comment     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("feedbacks")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String?  // Short title for the notification (nullable for backward compatibility)
+  message   String   // Detailed message
+  type      String   // INFO, WARNING, SUCCESS, ERROR, COMPLAINT, ASSIGNMENT, STATUS, FEEDBACK, REMINDER, LEAVE, ATTENDANCE
+  read      Boolean  @default(false)
+  actionUrl String?  // Optional URL to navigate when clicked
+  metadata  Json?    // Additional data (complaintId, officerId, etc.)
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+  @@index([userId, read])
+  @@index([createdAt])
+}

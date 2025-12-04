@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: janmat-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DATABASE_URL=postgresql://user:password@postgres:5432/janmat
+      - JWT_SECRET=dev_secret_key
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://rabbitmq
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    networks:
+      - janmat-network
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  frontend:
+    build: ./frontend
+    container_name: janmat-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:3000
+    depends_on:
+      - backend
+    networks:
+      - janmat-network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: janmat-postgres
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=janmat_admin
+      - POSTGRES_PASSWORD=secure_password
+      - POSTGRES_DB=janmat
+    networks:
+      - janmat-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:alpine
+    container_name: janmat-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - janmat-network
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: janmat-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - janmat-network
+
+networks:
+  janmat-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

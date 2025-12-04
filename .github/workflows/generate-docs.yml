@@ -1,0 +1,42 @@
+name: Generate API Docs
+
+on:
+  push:
+    branches: [ main, master, janmat ]
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install backend deps
+        working-directory: backend
+        run: npm ci
+
+      - name: Generate OpenAPI JSON
+        working-directory: backend
+        run: npm run docs:json
+
+      - name: Generate PDF
+        working-directory: backend
+        run: npm run docs:pdf
+
+      - name: Upload OpenAPI JSON artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: openapi-json
+          path: backend/docs/openapi.json
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: janmat-api-docs-pdf
+          path: backend/docs/janmat-api-docs.pdf

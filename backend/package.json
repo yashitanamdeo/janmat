@@ -1,0 +1,62 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "postinstall": "prisma generate",
+    "start": "node -e \"require('child_process').execSync('npx prisma migrate deploy', {stdio: 'inherit'}); require('child_process').execSync('node dist/server.js', {stdio: 'inherit'})\"",
+    "dev": "ts-node src/server.ts",
+    "build": "tsc",
+    "docs:json": "node scripts/generate-docs.js --json",
+    "docs:pdf": "node scripts/generate-docs.js --pdf",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "amqplib": "^0.10.9",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "ioredis": "^5.8.2",
+    "js-yaml": "^4.1.0",
+    "json2csv": "^6.0.0-alpha.2",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
+    "natural": "^8.1.0",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^7.0.10",
+    "pdfkit": "^0.17.2",
+    "pg": "^8.16.3",
+    "socket.io": "^4.8.1",
+    "swagger-ui-dist": "^4.15.5",
+    "swagger-ui-express": "^4.6.3",
+    "zod": "^4.1.12",
+    "@prisma/client": "^5.22.0",
+    "typescript": "^5.9.3",
+    "prisma": "^5.22.0",
+    "@types/amqplib": "^0.10.8",
+    "@types/bcryptjs": "^3.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.5",
+    "@types/js-yaml": "^4.0.9",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.0.0",
+    "@types/node-cron": "^3.0.11",
+    "@types/nodemailer": "^7.0.4",
+    "@types/pdfkit": "^0.17.3",
+    "@types/swagger-ui-express": "^4.1.8"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11",
+    "puppeteer": "^20.8.0",
+    "ts-node": "^10.9.2"
+  }
+}
