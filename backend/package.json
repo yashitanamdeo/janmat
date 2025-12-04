@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "postinstall": "prisma generate",
     "start": "node -e \"require('child_process').execSync('npx prisma migrate deploy', {stdio: 'inherit'}); require('child_process').execSync('node dist/server.js', {stdio: 'inherit'})\"",
     "dev": "ts-node src/server.ts",
     "build": "tsc",
