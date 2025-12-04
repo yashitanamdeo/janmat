@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { UserAvatar } from '../components/ui/UserAvatar';
 
 interface AttendanceRecord {
     id: string;
@@ -42,7 +43,7 @@ export const AdminAttendancePage: React.FC = () => {
     const fetchDepartments = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:3000/api/admin/departments', {
+            const response = await axios.get('https://janmat-backend.onrender.com/api/admin/departments', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setDepartments(response.data);
@@ -55,7 +56,7 @@ export const AdminAttendancePage: React.FC = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:3000/api/attendance/all', {
+            const response = await axios.get('https://janmat-backend.onrender.com/api/attendance/all', {
                 headers: { Authorization: `Bearer ${token}` },
                 params: {
                     date: selectedDate,

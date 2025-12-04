@@ -53,14 +53,14 @@ export const CreateOfficerModal: React.FC<CreateOfficerModalProps> = ({
             if (officer) {
                 // Edit mode
                 await axios.put(
-                    `http://localhost:3000/api/admin/officers/${officer.id}`,
+                    `https://janmat-backend.onrender.com/api/admin/officers/${officer.id}`,
                     formData,
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
             } else {
                 // Create mode
                 await axios.post(
-                    'http://localhost:3000/api/admin/officers',
+                    'https://janmat-backend.onrender.com/api/admin/officers',
                     {
                         ...formData,
                         role: 'OFFICER'

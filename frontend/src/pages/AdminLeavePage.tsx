@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { UserAvatar } from '../components/ui/UserAvatar';
 
 interface Leave {
     id: string;
@@ -17,6 +18,7 @@ interface Leave {
         name: string;
         email: string;
         phone?: string;
+        profilePicture?: string;
         department?: {
             id: string;
             name: string;
@@ -52,7 +54,7 @@ export const AdminLeavePage: React.FC = () => {
     const fetchDepartments = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:3000/api/admin/departments', {
+            const response = await axios.get('https://janmat-backend.onrender.com/api/admin/departments', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setDepartments(response.data);
@@ -69,7 +71,7 @@ export const AdminLeavePage: React.FC = () => {
             if (statusFilter) params.append('status', statusFilter);
             if (departmentFilter) params.append('departmentId', departmentFilter);
 
-            const response = await axios.get(`http://localhost:3000/api/leaves/all?${params}`, {
+            const response = await axios.get(`https://janmat-backend.onrender.com/api/leaves/all?${params}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setLeaves(response.data);
@@ -89,7 +91,7 @@ export const AdminLeavePage: React.FC = () => {
             const endpoint = actionType === 'approve' ? 'approve' : 'reject';
 
             await axios.post(
-                `http://localhost:3000/api/leaves/${selectedLeave.id}/${endpoint}`,
+                `https://janmat-backend.onrender.com/api/leaves/${selectedLeave.id}/${endpoint}`,
                 { comments },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -188,8 +190,8 @@ export const AdminLeavePage: React.FC = () => {
                                     key={status}
                                     onClick={() => setStatusFilter(status === 'ALL' ? '' : status)}
                                     className={`px-4 py-2 rounded-lg font-semibold transition-all ${(status === 'ALL' && !statusFilter) || statusFilter === status
-                                            ? 'bg-purple-600 text-white shadow-lg'
-                                            : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'
+                                        ? 'bg-purple-600 text-white shadow-lg'
+                                        : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'
                                         }`}
                                 >
                                     {status}
@@ -243,9 +245,7 @@ export const AdminLeavePage: React.FC = () => {
                                         <tr key={leave.id} className="hover:bg-[var(--bg-secondary)] transition-colors">
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-sm">
-                                                        {leave.user.name.charAt(0).toUpperCase()}
-                                                    </div>
+                                                    <UserAvatar user={leave.user} size="md" />
                                                     <div>
                                                         <div className="font-semibold text-[var(--text-primary)]">{leave.user.name}</div>
                                                         <div className="text-xs text-[var(--text-secondary)]">{leave.user.email}</div>
@@ -375,8 +375,8 @@ export const AdminLeavePage: React.FC = () => {
                                     onClick={handleAction}
                                     disabled={processing || (actionType === 'reject' && !comments.trim())}
                                     className={`flex-1 px-6 py-3 rounded-xl text-white font-semibold hover:scale-105 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${actionType === 'approve'
-                                            ? 'bg-gradient-to-r from-green-600 to-emerald-600'
-                                            : 'bg-gradient-to-r from-red-600 to-rose-600'
+                                        ? 'bg-gradient-to-r from-green-600 to-emerald-600'
+                                        : 'bg-gradient-to-r from-red-600 to-rose-600'
                                         }`}
                                 >
                                     {processing ? 'Processing...' : `${actionType === 'approve' ? 'Approve' : 'Reject'} Leave`}

@@ -80,7 +80,7 @@ export const Profile: React.FC = () => {
         try {
             const token = localStorage.getItem('token');
             const response = await axios.put(
-                'http://localhost:3000/api/auth/profile',
+                'https://janmat-backend.onrender.com/api/auth/profile',
                 formData,
                 {
                     headers: { Authorization: `Bearer ${token}` }
@@ -168,10 +168,18 @@ export const Profile: React.FC = () => {
                         </div>
                     </div>
                     <div className="relative pt-32 px-8 flex flex-col items-center">
-                        <div className="w-32 h-32 rounded-full border-4 border-white dark:border-slate-800 shadow-xl flex items-center justify-center text-4xl font-bold text-white z-10"
-                            style={{ background: getGradient() }}>
-                            {user?.name?.charAt(0).toUpperCase()}
-                        </div>
+                        {formData.profilePicture || user?.profilePicture ? (
+                            <img
+                                src={formData.profilePicture || user?.profilePicture}
+                                alt="Profile"
+                                className="w-32 h-32 rounded-full border-4 border-white dark:border-slate-800 shadow-xl object-cover z-10"
+                            />
+                        ) : (
+                            <div className="w-32 h-32 rounded-full border-4 border-white dark:border-slate-800 shadow-xl flex items-center justify-center text-4xl font-bold text-white z-10"
+                                style={{ background: getGradient() }}>
+                                {user?.name?.charAt(0).toUpperCase()}
+                            </div>
+                        )}
                         <div className="mt-4 text-center">
                             <h2 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{user?.name}</h2>
                             <div className="flex items-center justify-center gap-2 mt-2">

@@ -36,7 +36,7 @@ export const Dashboard: React.FC = () => {
             dispatch(fetchComplaintsStart());
             try {
                 const token = localStorage.getItem('token');
-                const response = await axios.get('http://localhost:3000/api/complaints/my-complaints', {
+                const response = await axios.get('https://janmat-backend.onrender.com/api/complaints/my-complaints', {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 dispatch(fetchComplaintsSuccess(response.data));
@@ -55,7 +55,7 @@ export const Dashboard: React.FC = () => {
 
     const handleComplaintUpdate = async () => {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:3000/api/complaints/my-complaints', {
+        const response = await axios.get('https://janmat-backend.onrender.com/api/complaints/my-complaints', {
             headers: { Authorization: `Bearer ${token}` },
         });
         dispatch(fetchComplaintsSuccess(response.data));
@@ -437,7 +437,7 @@ export const Dashboard: React.FC = () => {
                 onUpdate={() => {
                     // Refresh complaints list
                     const token = localStorage.getItem('token');
-                    axios.get('http://localhost:3000/api/complaints/my-complaints', {
+                    axios.get('https://janmat-backend.onrender.com/api/complaints/my-complaints', {
                         headers: { Authorization: `Bearer ${token}` },
                     }).then(response => {
                         dispatch(fetchComplaintsSuccess(response.data));

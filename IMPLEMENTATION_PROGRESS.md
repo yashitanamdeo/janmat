@@ -207,3 +207,7 @@ CREATE INDEX idx_notifications_created ON notifications(created_at);
 - **Security**: Proper validation, sanitization
 
 **Status**: Profile enhancement and small fixes are 100% complete and ready for testing!
+
+- officers should also see our same detailed complaint model like admin when they click on any complaint, but update status model should be visible too like it is currently, just when some text like complaint title or complaint decription is clicked then we should open complaint details model like in admin 
+- when an officer apply for leave, only the admin should get notification that xyz has requested abc leave for qwe days(s), currently the same officer is only getting this notification - that's wrong. Officer should get notification on the approval/rejection of the leave request and on reminder of complaint, and on assignment of complaint to them
+citizen should get notification when the status of their complaint changes

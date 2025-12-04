@@ -42,8 +42,8 @@ export const DepartmentModal: React.FC<DepartmentModalProps> = ({
         try {
             const token = localStorage.getItem('token');
             const url = department
-                ? `http://localhost:3000/api/departments/${department.id}`
-                : 'http://localhost:3000/api/departments';
+                ? `https://janmat-backend.onrender.com/api/departments/${department.id}`
+                : 'https://janmat-backend.onrender.com/api/departments';
             const method = department ? 'put' : 'post';
 
             await axios[method](

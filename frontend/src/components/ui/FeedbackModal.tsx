@@ -49,7 +49,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
             const method = existingFeedback ? 'put' : 'post';
 
             await axios[method](
-                `http://localhost:3000/api/complaints/${complaintId}/feedback`,
+                `https://janmat-backend.onrender.com/api/complaints/${complaintId}/feedback`,
                 { rating, comment },
                 {
                     headers: {

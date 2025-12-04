@@ -78,10 +78,14 @@ export class AnalyticsController {
             }
 
             return {
-                departmentId: dept.id,
-                departmentName: dept.name,
-                totalComplaints,
+                name: dept.name, // Chart expects 'name'
+                total: totalComplaints, // Chart expects 'total'
                 resolved: resolvedComplaints.length,
+                resolutionRate: totalComplaints > 0
+                    ? Math.round((resolvedComplaints.length / totalComplaints) * 100)
+                    : 0, // Chart expects 'resolutionRate'
+                // Additional data for reference
+                departmentId: dept.id,
                 pending: pendingComplaints.length,
                 avgResolutionTime,
                 satisfactionScore,

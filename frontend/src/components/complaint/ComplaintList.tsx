@@ -29,7 +29,7 @@ export const ComplaintList: React.FC = () => {
         try {
             const token = localStorage.getItem('token');
             await axios.delete(
-                `http://localhost:3000/api/complaints/${complaintId}`,
+                `https://janmat-backend.onrender.com/api/complaints/${complaintId}`,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             dispatch(removeComplaint(complaintId));

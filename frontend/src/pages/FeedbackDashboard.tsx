@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { StarRating } from '../components/ui/StarRating';
+import { UserAvatar } from '../components/ui/UserAvatar';
 
 interface Feedback {
     id: string;
@@ -17,6 +18,7 @@ interface Feedback {
         id: string;
         name: string;
         email: string;
+        profilePicture?: string;
     };
 }
 
@@ -34,7 +36,7 @@ export const FeedbackDashboard: React.FC = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:3000/api/admin/feedback', {
+            const response = await axios.get('https://janmat-backend.onrender.com/api/admin/feedback', {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setFeedbacks(response.data);
@@ -176,8 +178,8 @@ export const FeedbackDashboard: React.FC = () => {
                         <button
                             onClick={() => setFilterRating('ALL')}
                             className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${filterRating === 'ALL'
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
                                 }`}
                         >
                             All
@@ -187,8 +189,8 @@ export const FeedbackDashboard: React.FC = () => {
                                 key={rating}
                                 onClick={() => setFilterRating(rating)}
                                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${filterRating === rating
-                                        ? 'bg-yellow-600 text-white'
-                                        : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                                    ? 'bg-yellow-600 text-white'
+                                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
                                     }`}
                             >
                                 {rating} ⭐
@@ -222,9 +224,7 @@ export const FeedbackDashboard: React.FC = () => {
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="flex-1">
                                         <div className="flex items-center gap-3 mb-2">
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-lg">
-                                                {feedback.user.name.charAt(0).toUpperCase()}
-                                            </div>
+                                            <UserAvatar user={feedback.user} size="md" />
                                             <div>
                                                 <p className="font-bold" style={{ color: 'var(--text-primary)' }}>
                                                     {feedback.user.name}

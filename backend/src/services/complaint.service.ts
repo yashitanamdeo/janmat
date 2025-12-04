@@ -121,6 +121,16 @@ export class ComplaintService {
             },
         });
 
+        // Notify the citizen about status change
+        await prisma.notification.create({
+            data: {
+                userId: updatedComplaint.userId,
+                title: 'Complaint Status Updated',
+                message: `Your complaint "${updatedComplaint.title}" status has been updated to ${status}`,
+                type: 'COMPLAINT',
+            }
+        });
+
         // Real-time update
         try {
             const io = getIO();

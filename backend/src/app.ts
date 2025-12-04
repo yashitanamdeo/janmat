@@ -18,7 +18,14 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+    origin: [
+        'http://localhost:5173',
+        process.env.CORS_ORIGIN || 'https://janmat.vercel.app',
+        process.env.FRONTEND_URL || 'https://janmat.vercel.app'
+    ],
+    credentials: true
+}));
 app.use(express.json());
 app.use('/uploads', express.static('uploads')); // Serve uploaded files
 

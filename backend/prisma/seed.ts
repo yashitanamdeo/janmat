@@ -26,7 +26,6 @@ async function main() {
 
     const citizen = await prisma.user.create({
         data: {
-            id: '1',
             name: 'John Doe',
             email: 'citizen@test.com',
             password: hashedPassword,
@@ -37,7 +36,6 @@ async function main() {
 
     const officer = await prisma.user.create({
         data: {
-            id: '2',
             name: 'Officer Smith',
             email: 'officer@test.com',
             password: hashedPassword,
@@ -48,7 +46,6 @@ async function main() {
 
     const admin = await prisma.user.create({
         data: {
-            id: '3',
             name: 'Admin User',
             email: 'admin@test.com',
             password: hashedPassword,
@@ -60,7 +57,6 @@ async function main() {
     // Create additional officers
     const officer2 = await prisma.user.create({
         data: {
-            id: '4',
             name: 'Officer Johnson',
             email: 'officer2@test.com',
             password: hashedPassword,
@@ -71,7 +67,6 @@ async function main() {
 
     const officer3 = await prisma.user.create({
         data: {
-            id: '5',
             name: 'Officer Williams',
             email: 'officer3@test.com',
             password: hashedPassword,

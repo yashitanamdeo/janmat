@@ -7,6 +7,7 @@ import axios from 'axios';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
 import { HelpModal } from '../components/ui/HelpModal';
 import { NotificationCenter } from '../components/common/NotificationCenter';
+import { EnhancedComplaintDetailsModal } from '../components/complaint/EnhancedComplaintDetailsModal';
 
 interface Complaint {
     id: string;
@@ -31,6 +32,7 @@ export const OfficerDashboard: React.FC = () => {
     const [newStatus, setNewStatus] = useState('');
     const [comment, setComment] = useState('');
     const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+    const [viewComplaintId, setViewComplaintId] = useState<string | null>(null);
 
     useEffect(() => {
         loadComplaints();
@@ -41,7 +43,7 @@ export const OfficerDashboard: React.FC = () => {
         try {
             const token = localStorage.getItem('token');
             const response = await axios.get(
-                'http://localhost:3000/api/officer/assigned-complaints',
+                'https://janmat-backend.onrender.com/api/officer/assigned-complaints',
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             setAssignedComplaints(response.data || []);
@@ -57,7 +59,7 @@ export const OfficerDashboard: React.FC = () => {
         try {
             const token = localStorage.getItem('token');
             await axios.patch(
-                `http://localhost:3000/api/officer/complaints/${complaintId}/status`,
+                `https://janmat-backend.onrender.com/api/officer/complaints/${complaintId}/status`,
                 { status, comment },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -347,10 +349,18 @@ export const OfficerDashboard: React.FC = () => {
                                     >
                                         <div className="flex items-start justify-between mb-3">
                                             <div className="flex-1">
-                                                <h4 className="text-lg font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
+                                                <h4
+                                                    className="text-lg font-bold mb-1 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                                    style={{ color: 'var(--text-primary)' }}
+                                                    onClick={() => setViewComplaintId(complaint.id)}
+                                                >
                                                     {complaint.title}
                                                 </h4>
-                                                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                                                <p
+                                                    className="text-sm cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                                    style={{ color: 'var(--text-secondary)' }}
+                                                    onClick={() => setViewComplaintId(complaint.id)}
+                                                >
                                                     {complaint.description}
                                                 </p>
                                             </div>
@@ -475,6 +485,14 @@ export const OfficerDashboard: React.FC = () => {
                     </div>
                 )
             }
+
+            {/* Complaint Details Modal */}
+            <EnhancedComplaintDetailsModal
+                isOpen={viewComplaintId !== null}
+                onClose={() => setViewComplaintId(null)}
+                complaintId={viewComplaintId || ''}
+                onUpdate={loadComplaints}
+            />
 
             <HelpModal
                 isOpen={isHelpModalOpen}

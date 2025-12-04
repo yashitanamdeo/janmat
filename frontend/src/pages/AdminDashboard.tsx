@@ -67,7 +67,7 @@ export const AdminDashboard: React.FC = () => {
 
         try {
             // Fetch complaints
-            const complaintsRes = await axios.get('http://localhost:3000/api/admin/complaints', { headers });
+            const complaintsRes = await axios.get('https://janmat-backend.onrender.com/api/admin/complaints', { headers });
             dispatch(fetchComplaintsSuccess(complaintsRes.data));
         } catch (err: any) {
             dispatch(fetchComplaintsFailure(err.message));
@@ -76,10 +76,10 @@ export const AdminDashboard: React.FC = () => {
         // Fetch other data independently
         try {
             const [trendsRes, perfRes, officersRes, departmentsRes] = await Promise.allSettled([
-                axios.get('http://localhost:3000/api/analytics/trends', { headers }),
-                axios.get('http://localhost:3000/api/analytics/department-performance', { headers }),
-                axios.get('http://localhost:3000/api/admin/officers', { headers }),
-                axios.get('http://localhost:3000/api/admin/departments', { headers })
+                axios.get('https://janmat-backend.onrender.com/api/analytics/trends', { headers }),
+                axios.get('https://janmat-backend.onrender.com/api/analytics/department-performance', { headers }),
+                axios.get('https://janmat-backend.onrender.com/api/admin/officers', { headers }),
+                axios.get('https://janmat-backend.onrender.com/api/admin/departments', { headers })
             ]);
 
             if (trendsRes.status === 'fulfilled') setTrendsData(trendsRes.value.data);
@@ -102,7 +102,7 @@ export const AdminDashboard: React.FC = () => {
     const handleExport = async (format: 'csv' | 'pdf') => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get(`http://localhost:3000/api/admin/reports?format=${format}`, {
+            const response = await axios.get(`https://janmat-backend.onrender.com/api/admin/reports?format=${format}`, {
                 headers: { Authorization: `Bearer ${token}` },
                 responseType: 'blob',
             });

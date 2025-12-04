@@ -55,10 +55,10 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
         try {
             const token = localStorage.getItem('token');
             const [officersRes, departmentsRes] = await Promise.all([
-                axios.get('http://localhost:3000/api/admin/officers', {
+                axios.get('https://janmat-backend.onrender.com/api/admin/officers', {
                     headers: { Authorization: `Bearer ${token}` }
                 }),
-                axios.get('http://localhost:3000/api/departments', {
+                axios.get('https://janmat-backend.onrender.com/api/departments', {
                     headers: { Authorization: `Bearer ${token}` }
                 })
             ]);
@@ -81,7 +81,7 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
             const token = localStorage.getItem('token');
             // Use the new endpoint that handles both department and officer assignment
             await axios.patch(
-                `http://localhost:3000/api/admin/complaints/${complaintId}/department`,
+                `https://janmat-backend.onrender.com/api/admin/complaints/${complaintId}/department`,
                 {
                     departmentId: selectedDepartment || null,
                     officerId: selectedOfficer || undefined

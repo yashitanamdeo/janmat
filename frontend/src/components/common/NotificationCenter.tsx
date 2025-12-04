@@ -39,7 +39,7 @@ export const NotificationCenter: React.FC = () => {
             const token = localStorage.getItem('token');
             if (!token) return;
 
-            const response = await axios.get('http://localhost:3000/api/notifications', {
+            const response = await axios.get('https://janmat-backend.onrender.com/api/notifications', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setNotifications(response.data);
@@ -51,7 +51,7 @@ export const NotificationCenter: React.FC = () => {
     const markAsRead = async (id: string) => {
         try {
             const token = localStorage.getItem('token');
-            await axios.patch(`http://localhost:3000/api/notifications/${id}/read`, {}, {
+            await axios.patch(`https://janmat-backend.onrender.com/api/notifications/${id}/read`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -66,7 +66,7 @@ export const NotificationCenter: React.FC = () => {
     const markAllAsRead = async () => {
         try {
             const token = localStorage.getItem('token');
-            await axios.patch('http://localhost:3000/api/notifications/read-all', {}, {
+            await axios.patch('https://janmat-backend.onrender.com/api/notifications/read-all', {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 

@@ -30,10 +30,10 @@ export const AttendancePage: React.FC = () => {
         try {
             const token = localStorage.getItem('token');
             const [historyRes, todayRes] = await Promise.all([
-                axios.get('http://localhost:3000/api/attendance/my-attendance', {
+                axios.get('https://janmat-backend.onrender.com/api/attendance/my-attendance', {
                     headers: { Authorization: `Bearer ${token}` }
                 }),
-                axios.get('http://localhost:3000/api/attendance/today', {
+                axios.get('https://janmat-backend.onrender.com/api/attendance/today', {
                     headers: { Authorization: `Bearer ${token}` }
                 })
             ]);
@@ -49,7 +49,7 @@ export const AttendancePage: React.FC = () => {
     const handleCheckIn = async () => {
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:3000/api/attendance/check-in', {}, {
+            await axios.post('https://janmat-backend.onrender.com/api/attendance/check-in', {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             fetchAttendance();
@@ -61,7 +61,7 @@ export const AttendancePage: React.FC = () => {
     const handleCheckOut = async () => {
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:3000/api/attendance/check-out', {}, {
+            await axios.post('https://janmat-backend.onrender.com/api/attendance/check-out', {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             fetchAttendance();

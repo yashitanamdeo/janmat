@@ -14,7 +14,7 @@ export const useRealTimeUpdates = () => {
 
         // Initialize socket connection
         if (!socket) {
-            socket = io('http://localhost:3000', {
+            socket = io('https://janmat-backend.onrender.com', {
                 auth: { token },
                 transports: ['websocket', 'polling'],
             });

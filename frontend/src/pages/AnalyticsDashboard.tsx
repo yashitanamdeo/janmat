@@ -35,7 +35,7 @@ export const AnalyticsDashboard: React.FC = () => {
             const token = localStorage.getItem('token');
 
             // Fetch department performance
-            const deptResponse = await axios.get('http://localhost:3000/api/analytics/department-performance', {
+            const deptResponse = await axios.get('https://janmat-backend.onrender.com/api/analytics/department-performance', {
                 headers: { Authorization: `Bearer ${token}` },
                 params: { timeRange }
             });

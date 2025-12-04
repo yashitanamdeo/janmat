@@ -219,12 +219,13 @@ export class AdminController {
             },
         });
 
-        // Send notification
+        // Send notification to officer
         await prisma.notification.create({
             data: {
                 userId: officerId,
-                message: `New complaint assigned: ${complaint.title}`,
-                type: 'INFO'
+                title: 'New Complaint Assigned',
+                message: `You have been assigned: ${complaint.title}`,
+                type: 'ASSIGNMENT'
             }
         });
 

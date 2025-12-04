@@ -66,7 +66,7 @@ export const EditComplaintModal: React.FC<EditComplaintModalProps> = ({ isOpen, 
         try {
             const token = localStorage.getItem('token');
             const response = await axios.put(
-                `http://localhost:3000/api/complaints/${complaint.id}`,
+                `https://janmat-backend.onrender.com/api/complaints/${complaint.id}`,
                 {
                     title,
                     description,
