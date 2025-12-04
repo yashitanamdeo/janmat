@@ -33,10 +33,10 @@ export const OfficerManagement: React.FC = () => {
         try {
             const token = localStorage.getItem('token');
             const [officersRes, departmentsRes] = await Promise.all([
-                axios.get('https://janmat-backend.onrender.com/api/admin/officers', {
+                axios.get('https://janmat-backend-r51g.onrender.com/api/admin/officers', {
                     headers: { Authorization: `Bearer ${token}` },
                 }),
-                axios.get('https://janmat-backend.onrender.com/api/departments', {
+                axios.get('https://janmat-backend-r51g.onrender.com/api/departments', {
                     headers: { Authorization: `Bearer ${token}` },
                 }),
             ]);
@@ -55,7 +55,7 @@ export const OfficerManagement: React.FC = () => {
         try {
             const token = localStorage.getItem('token');
             await axios.patch(
-                `https://janmat-backend.onrender.com/api/admin/officers/${selectedOfficer.id}/department`,
+                `https://janmat-backend-r51g.onrender.com/api/admin/officers/${selectedOfficer.id}/department`,
                 { departmentId: selectedDepartmentId || null },
                 { headers: { Authorization: `Bearer ${token}` } }
             );

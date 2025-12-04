@@ -54,7 +54,7 @@ export const AdminLeavePage: React.FC = () => {
     const fetchDepartments = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('https://janmat-backend.onrender.com/api/admin/departments', {
+            const response = await axios.get('https://janmat-backend-r51g.onrender.com/api/admin/departments', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setDepartments(response.data);
@@ -71,7 +71,7 @@ export const AdminLeavePage: React.FC = () => {
             if (statusFilter) params.append('status', statusFilter);
             if (departmentFilter) params.append('departmentId', departmentFilter);
 
-            const response = await axios.get(`https://janmat-backend.onrender.com/api/leaves/all?${params}`, {
+            const response = await axios.get(`https://janmat-backend-r51g.onrender.com/api/leaves/all?${params}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setLeaves(response.data);
@@ -91,7 +91,7 @@ export const AdminLeavePage: React.FC = () => {
             const endpoint = actionType === 'approve' ? 'approve' : 'reject';
 
             await axios.post(
-                `https://janmat-backend.onrender.com/api/leaves/${selectedLeave.id}/${endpoint}`,
+                `https://janmat-backend-r51g.onrender.com/api/leaves/${selectedLeave.id}/${endpoint}`,
                 { comments },
                 { headers: { Authorization: `Bearer ${token}` } }
             );

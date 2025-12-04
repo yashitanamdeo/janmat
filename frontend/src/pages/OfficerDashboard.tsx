@@ -43,7 +43,7 @@ export const OfficerDashboard: React.FC = () => {
         try {
             const token = localStorage.getItem('token');
             const response = await axios.get(
-                'https://janmat-backend.onrender.com/api/officer/assigned-complaints',
+                'https://janmat-backend-r51g.onrender.com/api/officer/assigned-complaints',
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             setAssignedComplaints(response.data || []);
@@ -59,7 +59,7 @@ export const OfficerDashboard: React.FC = () => {
         try {
             const token = localStorage.getItem('token');
             await axios.patch(
-                `https://janmat-backend.onrender.com/api/officer/complaints/${complaintId}/status`,
+                `https://janmat-backend-r51g.onrender.com/api/officer/complaints/${complaintId}/status`,
                 { status, comment },
                 { headers: { Authorization: `Bearer ${token}` } }
             );

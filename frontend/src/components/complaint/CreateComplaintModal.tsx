@@ -24,7 +24,7 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({ isOp
         const fetchDepartments = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const response = await axios.get('https://janmat-backend.onrender.com/api/departments', {
+                const response = await axios.get('https://janmat-backend-r51g.onrender.com/api/departments', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setDepartments(response.data);
@@ -73,7 +73,7 @@ export const CreateComplaintModal: React.FC<CreateComplaintModalProps> = ({ isOp
             }
 
             const response = await axios.post(
-                'https://janmat-backend.onrender.com/api/complaints',
+                'https://janmat-backend-r51g.onrender.com/api/complaints',
                 formData,
                 {
                     headers: {

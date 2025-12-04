@@ -30,7 +30,7 @@ const AppContent: React.FC = () => {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const response = await axios.get('https://janmat-backend.onrender.com/api/auth/profile', {
+          const response = await axios.get('https://janmat-backend-r51g.onrender.com/api/auth/profile', {
             headers: { Authorization: `Bearer ${token}` }
           });
           if (response.data) {

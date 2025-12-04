@@ -91,7 +91,7 @@ export const Register: React.FC = () => {
         setError('');
 
         try {
-            const response = await axios.post('https://janmat-backend.onrender.com/api/auth/register', {
+            const response = await axios.post('https://janmat-backend-r51g.onrender.com/api/auth/register', {
                 name,
                 email,
                 phone,

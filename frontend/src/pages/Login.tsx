@@ -23,7 +23,7 @@ export const Login: React.FC = () => {
         e.preventDefault();
         dispatch(loginStart());
         try {
-            const response = await axios.post('https://janmat-backend.onrender.com/api/auth/login', { email, password });
+            const response = await axios.post('https://janmat-backend-r51g.onrender.com/api/auth/login', { email, password });
 
             if (response.data.mfaRequired) {
                 setShowMFA(true);
@@ -51,7 +51,7 @@ export const Login: React.FC = () => {
         e.preventDefault();
         dispatch(loginStart());
         try {
-            const response = await axios.post('https://janmat-backend.onrender.com/api/auth/verify-mfa', {
+            const response = await axios.post('https://janmat-backend-r51g.onrender.com/api/auth/verify-mfa', {
                 email: mfaEmail,
                 otp
             });

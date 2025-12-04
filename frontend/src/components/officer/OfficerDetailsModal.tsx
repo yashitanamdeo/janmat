@@ -51,7 +51,7 @@ export const OfficerDetailsModal: React.FC<OfficerDetailsModalProps> = ({ isOpen
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get(`https://janmat-backend.onrender.com/api/admin/officers/${officerId}`, {
+            const response = await axios.get(`https://janmat-backend-r51g.onrender.com/api/admin/officers/${officerId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setOfficer(response.data);
@@ -70,7 +70,7 @@ export const OfficerDetailsModal: React.FC<OfficerDetailsModalProps> = ({ isOpen
     const handleUpdate = async () => {
         try {
             const token = localStorage.getItem('token');
-            await axios.put(`https://janmat-backend.onrender.com/api/admin/officers/${officerId}`, editForm, {
+            await axios.put(`https://janmat-backend-r51g.onrender.com/api/admin/officers/${officerId}`, editForm, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setIsEditing(false);

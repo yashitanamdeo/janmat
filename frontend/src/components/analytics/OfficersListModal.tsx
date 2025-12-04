@@ -34,7 +34,7 @@ export const OfficersListModal: React.FC<OfficersListModalProps> = ({ isOpen, on
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('https://janmat-backend.onrender.com/api/admin/officers', {
+            const response = await axios.get('https://janmat-backend-r51g.onrender.com/api/admin/officers', {
                 headers: { Authorization: `Bearer ${token}` }
             });
 

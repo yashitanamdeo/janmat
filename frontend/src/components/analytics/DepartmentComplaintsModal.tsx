@@ -44,7 +44,7 @@ export const DepartmentComplaintsModal: React.FC<DepartmentComplaintsModalProps>
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('https://janmat-backend.onrender.com/api/admin/complaints', {
+            const response = await axios.get('https://janmat-backend-r51g.onrender.com/api/admin/complaints', {
                 headers: { Authorization: `Bearer ${token}` }
             });
 

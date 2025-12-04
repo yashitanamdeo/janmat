@@ -80,7 +80,7 @@ export const Profile: React.FC = () => {
         try {
             const token = localStorage.getItem('token');
             const response = await axios.put(
-                'https://janmat-backend.onrender.com/api/auth/profile',
+                'https://janmat-backend-r51g.onrender.com/api/auth/profile',
                 formData,
                 {
                     headers: { Authorization: `Bearer ${token}` }

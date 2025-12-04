@@ -28,10 +28,10 @@ export const BulkActionsModal: React.FC<BulkActionsModalProps> = ({ isOpen, onCl
         try {
             const token = localStorage.getItem('token');
             const [officersRes, deptsRes] = await Promise.all([
-                axios.get('https://janmat-backend.onrender.com/api/admin/officers', {
+                axios.get('https://janmat-backend-r51g.onrender.com/api/admin/officers', {
                     headers: { Authorization: `Bearer ${token}` }
                 }),
-                axios.get('https://janmat-backend.onrender.com/api/departments', {
+                axios.get('https://janmat-backend-r51g.onrender.com/api/departments', {
                     headers: { Authorization: `Bearer ${token}` }
                 })
             ]);
@@ -51,7 +51,7 @@ export const BulkActionsModal: React.FC<BulkActionsModalProps> = ({ isOpen, onCl
                 // Assign all selected complaints to officer
                 await Promise.all(
                     selectedComplaintIds.map(id =>
-                        axios.post(`https://janmat-backend.onrender.com/api/admin/complaints/${id}/assign`,
+                        axios.post(`https://janmat-backend-r51g.onrender.com/api/admin/complaints/${id}/assign`,
                             { officerId: selectedOfficer },
                             { headers: { Authorization: `Bearer ${token}` } }
                         )
@@ -62,7 +62,7 @@ export const BulkActionsModal: React.FC<BulkActionsModalProps> = ({ isOpen, onCl
                 // Update status for all selected complaints
                 await Promise.all(
                     selectedComplaintIds.map(id =>
-                        axios.patch(`https://janmat-backend.onrender.com/api/complaints/${id}/status`,
+                        axios.patch(`https://janmat-backend-r51g.onrender.com/api/complaints/${id}/status`,
                             { status: selectedStatus, comment: 'Bulk status update' },
                             { headers: { Authorization: `Bearer ${token}` } }
                         )
@@ -73,7 +73,7 @@ export const BulkActionsModal: React.FC<BulkActionsModalProps> = ({ isOpen, onCl
                 // Update department for all selected complaints
                 await Promise.all(
                     selectedComplaintIds.map(id =>
-                        axios.patch(`https://janmat-backend.onrender.com/api/admin/complaints/${id}/department`,
+                        axios.patch(`https://janmat-backend-r51g.onrender.com/api/admin/complaints/${id}/department`,
                             { departmentId: selectedDepartment },
                             { headers: { Authorization: `Bearer ${token}` } }
                         )

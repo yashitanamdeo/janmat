@@ -36,7 +36,7 @@ export const FeedbackDashboard: React.FC = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('https://janmat-backend.onrender.com/api/admin/feedback', {
+            const response = await axios.get('https://janmat-backend-r51g.onrender.com/api/admin/feedback', {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setFeedbacks(response.data);

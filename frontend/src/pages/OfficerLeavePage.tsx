@@ -39,7 +39,7 @@ export const OfficerLeavePage: React.FC = () => {
         try {
             const token = localStorage.getItem('token');
             const params = statusFilter !== 'ALL' ? `?status=${statusFilter}` : '';
-            const response = await axios.get(`https://janmat-backend.onrender.com/api/leaves/my-leaves${params}`, {
+            const response = await axios.get(`https://janmat-backend-r51g.onrender.com/api/leaves/my-leaves${params}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setLeaves(response.data);
@@ -56,7 +56,7 @@ export const OfficerLeavePage: React.FC = () => {
 
         try {
             const token = localStorage.getItem('token');
-            await axios.post('https://janmat-backend.onrender.com/api/leaves/apply', formData, {
+            await axios.post('https://janmat-backend-r51g.onrender.com/api/leaves/apply', formData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -77,7 +77,7 @@ export const OfficerLeavePage: React.FC = () => {
 
         try {
             const token = localStorage.getItem('token');
-            await axios.delete(`https://janmat-backend.onrender.com/api/leaves/${leaveId}`, {
+            await axios.delete(`https://janmat-backend-r51g.onrender.com/api/leaves/${leaveId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             fetchLeaves();

@@ -33,7 +33,7 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({ onSearch, onClos
     const loadDepartments = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('https://janmat-backend.onrender.com/api/departments', {
+            const response = await axios.get('https://janmat-backend-r51g.onrender.com/api/departments', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setDepartments(response.data);
@@ -46,7 +46,7 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({ onSearch, onClos
         setSearching(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.post('https://janmat-backend.onrender.com/api/admin/complaints/search', criteria, {
+            const response = await axios.post('https://janmat-backend-r51g.onrender.com/api/admin/complaints/search', criteria, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             onSearch(response.data);

@@ -18,7 +18,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({ onActionCo
             color: 'from-red-500 to-pink-600',
             action: async () => {
                 const token = localStorage.getItem('token');
-                await axios.post('https://janmat-backend.onrender.com/api/admin/quick-actions/assign-urgent', {}, {
+                await axios.post('https://janmat-backend-r51g.onrender.com/api/admin/quick-actions/assign-urgent', {}, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
             }
@@ -31,7 +31,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({ onActionCo
             color: 'from-blue-500 to-cyan-600',
             action: async () => {
                 const token = localStorage.getItem('token');
-                await axios.post('https://janmat-backend.onrender.com/api/admin/quick-actions/balance-workload', {}, {
+                await axios.post('https://janmat-backend-r51g.onrender.com/api/admin/quick-actions/balance-workload', {}, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
             }
@@ -44,7 +44,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({ onActionCo
             color: 'from-yellow-500 to-orange-600',
             action: async () => {
                 const token = localStorage.getItem('token');
-                await axios.post('https://janmat-backend.onrender.com/api/admin/quick-actions/send-reminders', {}, {
+                await axios.post('https://janmat-backend-r51g.onrender.com/api/admin/quick-actions/send-reminders', {}, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
             }
@@ -57,7 +57,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({ onActionCo
             color: 'from-purple-500 to-indigo-600',
             action: async () => {
                 const token = localStorage.getItem('token');
-                await axios.post('https://janmat-backend.onrender.com/api/admin/quick-actions/escalate-overdue', {}, {
+                await axios.post('https://janmat-backend-r51g.onrender.com/api/admin/quick-actions/escalate-overdue', {}, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
             }
@@ -70,7 +70,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({ onActionCo
             color: 'from-green-500 to-emerald-600',
             action: async () => {
                 const token = localStorage.getItem('token');
-                const response = await axios.get('https://janmat-backend.onrender.com/api/admin/reports/weekly', {
+                const response = await axios.get('https://janmat-backend-r51g.onrender.com/api/admin/reports/weekly', {
                     headers: { Authorization: `Bearer ${token}` },
                     responseType: 'blob'
                 });
@@ -91,7 +91,7 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({ onActionCo
             color: 'from-gray-500 to-slate-600',
             action: async () => {
                 const token = localStorage.getItem('token');
-                await axios.post('https://janmat-backend.onrender.com/api/admin/quick-actions/archive-resolved', {}, {
+                await axios.post('https://janmat-backend-r51g.onrender.com/api/admin/quick-actions/archive-resolved', {}, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
             }
