@@ -38,9 +38,9 @@
     "swagger-ui-dist": "^4.15.5",
     "swagger-ui-express": "^4.6.3",
     "zod": "^4.1.12",
-    "@prisma/client": "^5.22.0"
-  },
-  "devDependencies": {
+    "@prisma/client": "^5.22.0",
+    "typescript": "^5.9.3",
+    "prisma": "^5.22.0",
     "@types/amqplib": "^0.10.8",
     "@types/bcryptjs": "^3.0.0",
     "@types/cors": "^2.8.19",
@@ -51,11 +51,11 @@
     "@types/node-cron": "^3.0.11",
     "@types/nodemailer": "^7.0.4",
     "@types/pdfkit": "^0.17.3",
-    "@types/swagger-ui-express": "^4.1.8",
+    "@types/swagger-ui-express": "^4.1.8"
+  },
+  "devDependencies": {
     "nodemon": "^3.1.11",
-    "prisma": "^5.22.0",
     "puppeteer": "^20.8.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "ts-node": "^10.9.2"
   }
 }
