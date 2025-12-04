@@ -4,14 +4,7 @@ import logo from '../assets/Janmat-logo-main.png';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
 
 export const AboutPage: React.FC = () => {
-    const [scrollY, setScrollY] = useState(0);
     const [count, setCount] = useState({ complaints: 0, citizens: 0, officers: 0 });
-
-    useEffect(() => {
-        const handleScroll = () => setScrollY(window.scrollY);
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
 
     useEffect(() => {
         // Animated counter

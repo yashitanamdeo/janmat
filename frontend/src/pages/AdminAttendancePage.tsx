@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { UserAvatar } from '../components/ui/UserAvatar';
 
 interface AttendanceRecord {
     id: string;

@@ -27,7 +27,6 @@ export const DepartmentComplaintsModal: React.FC<DepartmentComplaintsModalProps>
     onClose,
     departmentId,
     departmentName,
-    onComplaintClick
 }) => {
     const [complaints, setComplaints] = useState<Complaint[]>([]);
     const [loading, setLoading] = useState(true);
