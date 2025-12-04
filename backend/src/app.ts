@@ -18,13 +18,34 @@ dotenv.config();
 
 const app = express();
 
+// CORS configuration with dynamic origin handling
+const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    process.env.CORS_ORIGIN,
+    process.env.FRONTEND_URL,
+    'https://janmat.vercel.app',
+    'https://janmat-beta.vercel.app'
+].filter(Boolean); // Remove undefined values
+
 app.use(cors({
-    origin: [
-        'http://localhost:5173',
-        process.env.CORS_ORIGIN || 'https://janmat.vercel.app',
-        process.env.FRONTEND_URL || 'https://janmat.vercel.app'
-    ],
-    credentials: true
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        // Check if origin is in allowed list or is a vercel.app subdomain
+        if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+            callback(null, true);
+        } else {
+            console.warn(`CORS blocked origin: ${origin}`);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['Content-Range', 'X-Content-Range'],
+    maxAge: 600 // Cache preflight for 10 minutes
 }));
 app.use(express.json());
 app.use('/uploads', express.static('uploads')); // Serve uploaded files
