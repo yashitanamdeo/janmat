@@ -39,7 +39,20 @@ export const AnalyticsDashboard: React.FC = () => {
                 headers: { Authorization: `Bearer ${token}` },
                 params: { timeRange }
             });
-            setDepartmentStats(deptResponse.data);
+
+            // Transform backend response to match frontend interface
+            const transformedData = deptResponse.data.map((dept: any) => ({
+                departmentId: dept.departmentId,
+                departmentName: dept.name, // Backend sends 'name', we need 'departmentName'
+                totalComplaints: dept.total, // Backend sends 'total', we need 'totalComplaints'
+                resolved: dept.resolved,
+                pending: dept.pending,
+                avgResolutionTime: dept.avgResolutionTime,
+                satisfactionScore: dept.satisfactionScore,
+                activeOfficers: dept.activeOfficers
+            }));
+
+            setDepartmentStats(transformedData);
         } catch (error) {
             console.error('Failed to load analytics:', error);
         } finally {
